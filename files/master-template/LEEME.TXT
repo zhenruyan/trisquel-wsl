@@ -1,0 +1,34 @@
+﻿   ___        ___               ___        ___       ___        ___        ___
+  /\  \      /\  \      ___    /\  \      /\  \     /\__\      /\  \      /\__\
+  \ \  \    /  \  \    /\  \  /  \  \    /  \  \   / /  /     /  \  \    / /  /
+   \ \  \  / /\ \  \   \ \  \/ /\ \  \  / /\ \  \ / /  /     / /\ \  \  / /  /
+   /  \  \/  \ \ \  \  /  \__\ \ \ \  \/ /  \ \  \ /  /  ___/  \ \ \  \/ /  /
+  / /\ \__\/\ \ \ \__\/ /\/__/\ \ \ \__\/__/ \ \__\__/  /\__\/\ \ \ \__\/__/
+ / /  \/__/_|  \/ /  / /  /\ \ \ \ \/__/\  \ / /  /  \ / /  /\ \ \ \/__/\  \
+/ /  /      | |  /  / /__/  \ \ \ \__\ \ \/\/ /  / \  / /  /\ \ \ \__\ \ \  \
+\/__/       | |\/__/\ \__\   \ \/ /  /  \    /  / \ \/ /  /  \ \ \/__/  \ \  \
+            | |  |   \/__/    \  /  /    \  /  /   \  /  /    \ \__\     \ \__\
+             \|__|             \/__/      \/__/     \/__/      \/__/      \/__/
+
+
+    Los programas incluidos en el sistema Trisquel son software libre;
+    los términos exactos para cada programa están descritos en los archivos
+    individuales en /usr/share/doc/*/copyright.
+
+    Trisquel se distribuye sin NINGUNA GARANTÍA, hasta donde está permitido
+    por las leyes aplicables.
+
+##############################################################################
+
+    Trisquel GNU/Linux sólo incluye software libre. Si encuentra una aplicación
+    no libre (bajo los términos de la Free Software Foundation y/o las
+    Debian Free Software Guidelines) incluida en nuestros CD's/DVD's
+    o nuestros servidores, por favor informe en trisquel@trisquel.info
+    y la eliminaremos.
+
+    Esta distribución contiene programas, tales como codecs o software de
+    privacidad, que en algunos países pueden estar sujetos a patentes o tener 
+    problemas legales.
+    Las leyes sobre copyright y patentes son diferentes en cada país. Por favor
+    obtenga consejo legal si no está seguro de si una restricción o patente de
+    su país se aplica al programa que desea utilizar.
