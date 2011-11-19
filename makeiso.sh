@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #    Copyright (C) 2004,2005,2006,2007,2008,2009,2010,2011  Rubén Rodríguez <ruben@trisquel.info>
 #
@@ -17,7 +17,7 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-if [ $UID =! 0 ]; then
+if [ $UID != 0 ]; then
     echo You need to run this script as root!
     exit 1
 fi
@@ -433,7 +433,7 @@ mkdir -p $CHROOT/usr/share/backgrounds/
 cp files/artwork/sugar/sugar-grub.png $CHROOT/usr/share/backgrounds/trisquel-grub-custom.png
 cp files/artwork/sugar/back-sugar.jpg master/isolinux/back.jpg
 
-for TRANSLATION in en_US es_ES fr_FR de_DE it_IT el_GR nl_NL ta_IN ru_RU vi_VN
+for TRANSLATION in en_US es_ES fr_FR de_DE it_IT el_GR nl_NL ta_IN ru_RU vi_VN quz_PE aym_PE
 do
     SHORT=$( echo $TRANSLATION | cut -d_ -f1 )
     echo $SHORT >> master/isolinux/langlist
