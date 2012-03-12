@@ -1,0 +1,5 @@
+http://audio-video.gnu.org/audio/#ESSI04
+
+Richard M. Stallman's speech, Free Software Freedom and Community, given at ESSI, France, April 2004
+
+The introduction to this speech is in French. The body of the speech is given in English.

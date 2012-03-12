@@ -1,0 +1,12 @@
+http://www.mail-archive.com/info-member@gnu.org/msg00036.html
+
+On June 29, 2007, free software supporters gathered at the Free Software
+Foundation office in Boston, Massachusetts to hear Richard Stallman announce
+the official release of the GNU General Public License, version 3.
+
+We've made a video available of this announcement. You can watch Stallman give
+an overview of the major changes in the license, and his reflections on the
+drafting process.
+
+The video is Ogg Theora, and is about fifteen minutes long. Please download it
+from any of the following URLs:

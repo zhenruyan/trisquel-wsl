@@ -51,7 +51,7 @@ i18n: Builds a DVD with extra translations
 fsf: Builds the FSF membership card image
 
 Usage: $0 debootstrap|iso|squash|source|torrent|all i386|amd64 trisquel|trisquel-mini|trisquel-sugar|triskel codename [i18n] [fsf]
-Requirements: genisoimage, squashfs-tools, debootstrap, lzma, curl
+Requirements: genisoimage, squashfs-tools, debootstrap, lzma, curl, syslinux
 
 WARNING: this version of $0 uses a ramdisk to build the system, so you need roughly 6GB RAM to run it."
 }
@@ -550,14 +550,16 @@ cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
 
-NAME=${DIST}_${VERSION-$(date +%Y%m%d)}_$SUBARCH
+VERSION=$VERSION-$(date +%Y%m%d)
+
+NAME=${DIST}_${VERSION}_$SUBARCH
 [ $i18n = "true" ] && NAME=${DIST}_${VERSION}-i18n_$SUBARCH
 [ $fsf = "true" ] &&  NAME=${DIST}_${VERSION}-fsf_$SUBARCH
 mkisofs -D -r -V "${DIST} ${VERSION} ${SUBARCH}" -cache-inodes -J -l -b isolinux/isolinux.bin \
    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
    -o iso/${NAME}.iso master
 isohybrid iso/${NAME}.iso
-cd
+cd iso
 md5sum ${NAME}.iso > ${NAME}.iso.md5
 cd ..
 
@@ -608,7 +610,7 @@ all)		COLUMNS=500 DO_DEBOOTSTRAP 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG || exit 1
 		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
 		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
 #		COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-	#	DELETE_CHROOT $CHROOT
+		DELETE_CHROOT $CHROOT
 		;;
 esac
 

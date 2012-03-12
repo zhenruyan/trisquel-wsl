@@ -1,0 +1,8 @@
+http://audio-video.gnu.org/audio/#FSS04
+
+Bradley M. Kuhn's speech, Software Freedom and the GNU Generation, given at The Siebel Center for Computer Science at the University of Illinois in Urbana/Champaign, USA on 2004-04-24.
+
+This speech is 2 hour, 4 minutes long and encoded in Ogg Vorbis format. [ Download the Ogg Vorbis file of this speech (17.8 MB) via HTTP. ]
+
+note: BMK's speech starts with a few seconds of background noise. (Possibly the projection screen motor)
+In this speech, Brad Kuhn, executive director of the Free Software Foundation, talks about his beginnings in the free software movement and gives concrete examples from his experience as being a proprietary software developer as to why free software is a far better way to make and sell software. It should be considered a excellent introduction to Free Software. In the question and answer segment, Mr. Kuhn discusses with the audience far ranging topics that effect the future of the industry such as the SCO vs. IBM Lawsuit, File Formats, and the DMCA. This speech was presented by the Free Software Society, a student organization at the University of Illinois at Urbana/Champaign dedicated to the promotion of Free Software

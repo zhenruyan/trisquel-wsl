@@ -1,0 +1,15 @@
+http://www.archive.org/details/punkcast964a
+
+MacFieEben Moglen - Free Software and Free Media (audio) (May 3, 2006)
+ Sponsored by isoc-ny, Eben Moglen, counsel for Richard Stallman and the Free Software Foundation, gave a talk that gave a general background on the principles of the Free Software movement, and addressed specific details as how it's spread is developing, especially as it affects communications and media. Afterwards there was a lengthy Q&A session which is part2 here. The files are in two formats: 1) ogg vorbis @96kbps and 2) flac, suitable for expansion to audio cd.
+
+Pasting an ogg link Pt.1 | Pt.2 straight into VLC player could be the best way to go.
+
+
+Video can be found here.
+
+
+The content is copyright Eben Moglen and can be re-distributed freely under the terms of the GFDL.
+
+
+More info: http://punkcast.com/964, where a DVD version is available.

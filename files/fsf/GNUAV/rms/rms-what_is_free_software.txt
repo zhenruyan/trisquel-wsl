@@ -1,0 +1,3 @@
+http://audio-video.gnu.org/audio/#TW
+
+Richard M. Stallman's speech, What is Free Software? given at given at the National Center for High Performance Computing, Taiwan. 27th May 2005.

@@ -1,0 +1,40 @@
+http://www.gnu.org/fry/
+
+Mr. Stephen Fry introduces you to free software, and reminds you of a very special birthday.
+
+FSF and Stephen Fry celebrate the GNU Project 25th anniversary
+
+    * Send this page to somebody
+    * Print this page
+
+BOSTON, Massachusetts, USA -- Tuesday, September 2, 2008 -- The GNU operating system is turning 25 this year, and the Free Software Foundation (FSF) has kicked off its month-long celebration of the anniversary by releasing "Happy Birthday to GNU," a short film featuring the English humorist, actor, novelist and filmmaker Stephen Fry.
+
+In the five-minute film, Fry compares the free software operating system to "good science" and contrasts it with the "kind of tyranny" imposed by the proprietary software produced by companies like Microsoft and Apple that it replaces. He encourages people to use free GNU/Linux distributions like gNewSense (http://gnewsense.org) and free software generally, for freedom's sake.
+
+"Stephen has generously donated his time to the cause of free software. His ability to communicate a technological and philosophical movement in terms of the basic principles of sharing and user freedom -- ideas that everyone can understand -- will introduce a new and broader audience to the benefits of free software," said Matt Lee, an FSF campaigns manager and writer/producer of the film.
+
+The video is available for download at http://www.gnu.org, and the FSF is encouraging supporters to share it as widely as possible. Many have already posted an image of Fry linking back to the video on their blogs and web sites. The film will also be distributed as an update to gNewSense users.
+
+Peter Brown, the FSF's executive director, added, "We intend for the 25th anniversary to be more than just a reflection on the history of the free software movement, because despite all of the success brought about by the GNU system and other free software projects, we still need a determined effort to replace or eliminate the proprietary applications, platforms, drivers and firmware that many users still run. In this light, the video of Stephen Fry is not just a celebration, but a rallying call for the work that still needs to be done. During September we plan a number of further announcements leading up to Software Freedom Day (http://softwarefreedomday.org/) on September 20 and the GNU anniversary on September 27."
+
+Today over 300 software packages are released under the auspices of the GNU Project, and new programs are being added all the time. These programs range from the original core operating system components to more recent additions like Gnash, a free software answer to the threat posed by Adobe's proprietary Flash player plugin; and GNU PDF, a reader for PDF files. Outside of GNU, the Free Software Directory (http://directory.fsf.org) names over 5,000 additional free software projects, including Firefox-based web browsers, the Apache web server, and OpenOffice.org. Other well-known groups, like Wikipedia, Creative Commons, and the free culture movement, cite the GNU system and the free software philosophy as important inspirations for their decisions to make similar commitments to freedom in their respective areas.
+
+"Happy Birthday to GNU," along with more information about GNU software and philosophy, are on display at http://www.gnu.org.
+About the GNU Operating System and Linux
+
+Richard Stallman announced in September 1983 the plan to develop a free software Unix-like operating system called GNU. GNU is the only operating system developed specifically for the sake of users' freedom. See http://www.gnu.org/gnu/the-gnu-project.html.
+
+In 1992, the essential components of GNU were complete, except for one, the kernel. When in 1992 the kernel Linux was re-released under the GNU GPL, making it free software, the combination of GNU and Linux formed a complete free operating system, which made it possible for the first time to run a PC without non-free software. This combination is the GNU/Linux system. For more explanation, see http://www.gnu.org/gnu/gnu-linux-faq.html.
+About Free Software and Open Source
+
+The free software movement's goal is freedom for computer users. Some, especially corporations, advocate a different viewpoint, known as "open source," which cites only practical goals such as making software powerful and reliable, focuses on development models, and avoids discussion of ethics and freedom. These two viewpoints are different at the deepest level. For more explanation, see http://www.gnu.org/philosophy/open-source-misses-the-point.html.
+About the Free Software Foundation
+
+The Free Software Foundation, founded in 1985, is dedicated to promoting computer users' right to use, study, copy, modify, and redistribute computer programs. The FSF promotes the development and use of free (as in freedom) software -- particularly the GNU operating system and its GNU/Linux variants -- and free documentation for free software. The FSF also helps to spread awareness of the ethical and political issues of freedom in the use of software, and its Web sites, located at fsf.org and gnu.org, are an important source of information about GNU/Linux. Donations to support the FSF's work can be made at http://donate.fsf.org. Its headquarters are in Boston, MA, USA.
+Media Contacts
+
+John Sullivan
+Operations Manager
+Free Software Foundation
++1 (617) 542 5942
+campaigns@fsf.org

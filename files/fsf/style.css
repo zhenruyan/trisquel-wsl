@@ -1,0 +1,110 @@
+/*  (do not remove this :) */
+/*  (not this either :) */
+
+html{ background-color: white; color: black;}
+
+html{ background-image: url(rmsbg.png);
+      background-repeat: repeat-x; }
+
+body{
+      margin: 0 auto 0;
+      font-family: "Liberation Sans", "Bitstream Vera Sans", Arial,sans-serif; }
+
+.c{text-align: center; margin: 1em;}
+
+.bigbig{font-size: 64pt; font-weight: bold;}
+
+a:link{ color: #b00; }
+
+a:hover{ color: navy !important; }
+
+.visualClear{ clear: both; }
+
+#fixed {width: 820px; position: relative;}
+
+#logo {background-image:url('logo-new.png'); margin:17px 0em 0px 5px}
+
+#logo a{ padding-top:33px; width:283px; margin-top: -5px; }
+
+#header{ height: 33px;}
+
+#topnav {top: 0px; right: 0; position: absolute; line-height: 28px; width: 505px; text-align: right; overflow: hidden; height: 48px; font-size: 12px; }
+
+#topnav li{ display: inline; margin-right: 18px; }
+
+#topnav a{ color: #b00; font-weight: bold; text-transform: uppercase;
+text-decoration: none;}
+
+#topnav a:hover{color: navy; }
+
+#fixed .caption a{ display:block; text-decoration:none;
+overflow:hidden; border:0; margin:0; padding:0; padding-top:50px;height:0px !important; width: 820px; cursor: pointer; }
+
+#fixed .caption { background:url(since1985.png) no-repeat;
+border:0; margin:0em; padding:0; }
+
+#front{ position: relative; min-height: 16em; background-image: url(front-gnu.png); background-repeat: no-repeat;}
+
+#text{ width: 514px; position: absolute; top: 41px; left: 250px; padding-top: 18px; }
+
+#text p{ margin-bottom: 1.65em; font-family: "Liberation Sans"; font-weight: bold; color: #525252; font-size: 0.8em; }
+
+#learnmore { float: right; clear: left; margin-top: -20px; top: -20px; position: relative;}
+
+#leader {background-image:url('front-gnu.png'); }
+
+.imgreplace { background-repeat: no-repeat; border: 0; margin: 0; padding: 0; }
+
+.imgreplace a{ display: block; text-decoration: none; overflow: hidden; border: 0; margin: 0; padding: 0; height: 0px !important; cursor: pointer; }
+
+#leader a{ padding-top:260px; width:820px; }
+
+.news{ background-color: #eee; line-height: 1.8em; margin-top: 10px;
+text-align: center; font-size: 13.5px; min-height: 28px; }
+
+.news a{ text-decoration: none; color: blue !important; }
+
+.news a:hover{ color: red !important; text-decoration: underline; }
+
+#boxes{ float: left; width: 100%; }
+
+#boxes li { float: left; margin: 0; padding: 0; margin-right: 11px; list-style: none !important; }
+
+.campaignsimg {  background-image: url('box-john.png'); }
+.gnewsenseimg {  background-image: url('box-gnu.png'); }
+.directoryimg {  background-image: url('box-fsd.png'); }
+
+#boxes li a{ padding-top: 176px; width: 266px; }
+
+.noright{ margin-right: 0 !important; }
+
+#footer{ color: #666; font-size: 12px; text-align: center;
+margin-bottom: 23px; }
+
+#footer-links{ margin-top: 20px; }
+
+#footer-links li{ display: inline; text-transform: uppercase; }
+
+#footer p{ margin-top: 10px; font-size: 11px; font-family: "Liberation Sans", sans-serif; }
+
+#footer li a{ margin-right: 1em; font-weight: bold; color: #b00; font-size: 0.9em; text-decoration: none; }
+
+#footer ul{ border-bottom: 1px solid #ddd; padding-bottom: 9px; }
+
+#aboutfsf { background-image:url(aboutfsfline.png); margin-bottom: 11px; }
+
+#aboutfsf a{ width: 820px; padding-top: 30px; }
+
+.box {margin: 0 0 0.75em 0; clear: both; position: relative;}
+b.cn {position: absolute; /* border: 1px solid red !important; */
+  height: 10px; width: 10px;
+  margin: 0; padding: 0;
+  background: url('white.png') no-repeat;
+  line-height: 1px; font-size: 1px;}  /* IE/Win 'hacks' */
+* html b.cn {background-image: url('white.gif');}
+b.tl {top: -1px; left: -1px; background-position: top left;}
+b.tr {top: -1px; right: -1px; background-position: top right;}
+b.bl {bottom: -1px; left: -1px; background-position: bottom left;}
+b.br {bottom: -1px; right: -1px; background-position: bottom right;}
+
+/*  */
