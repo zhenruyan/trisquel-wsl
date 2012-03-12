@@ -276,7 +276,7 @@ fi
 
 if [ $fsf = "true" ]
 then
-    FSFEXTRAS="inkscape blender mypaint xournal audacity"
+    FSFEXTRAS="inkscape blender mypaint xournal audacity gimp gimp-ufraw"
     echo "apt-get install -y --force-yes --install-recommends $FSFEXTRAS" >> $CHROOT/tmp/install
     echo "aptitude unmarkauto $FSFEXTRAS" >> $CHROOT/tmp/install
     echo "apt-get clean" >> $CHROOT/tmp/install
