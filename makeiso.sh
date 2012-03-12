@@ -50,7 +50,7 @@ Extra parameters:
 i18n: Builds a DVD with extra translations
 fsf: Builds the FSF membership card image
 
-Usage: $0 debootstrap|iso|squash|source|torrent|all i386|amd64 trisquel|trisquel-mini|trisquel-sugar|triskel version codename [i18n] [fsf]
+Usage: $0 debootstrap|iso|squash|source|torrent|all i386|amd64 trisquel|trisquel-mini|trisquel-sugar|triskel codename [i18n] [fsf]
 Requirements: genisoimage, squashfs-tools, debootstrap, lzma, curl
 
 WARNING: this version of $0 uses a ramdisk to build the system, so you need roughly 6GB RAM to run it."
@@ -85,8 +85,9 @@ export VERSION=$(wget -q -O - http://archive.trisquel.info/trisquel/dists/$CODEN
 [ $CODENAME = taranis ] && UPSTREAM=lucid
 [ $CODENAME = slaine ] && UPSTREAM=maverick
 [ $CODENAME = dagda ] && UPSTREAM=natty
+[ $CODENAME = brigantia ] && UPSTREAM=oneiric
 
-export LOCALMIRROR="deb http://devel.trisquel.info/trisquel $UPSTREAM main" # The optional local testing repository
+export LOCALMIRROR="deb http://devel.trisquel.info/trisquel/$UPSTREAM $UPSTREAM main" # The optional local testing repository
 
 echo $* | grep -q i18n && i18n=true || i18n=false
 # Make a FSF membercard image?
@@ -262,7 +263,7 @@ then
     LANGSUPPORT="en es pt fr sv de it uk zh-hans ru pl nl ja zh-hant gl ca da hu cs nb fi et el sr sl sk ro bg eu ko nn lt vi pa lv ar he th ga id hi ta eo ast tr oc nds sq km hr"
     for language in $LANGSUPPORT
     do
-        for package in language-support language-pack language-pack-gnome libreoffice-help gimp-help libreoffice-l10n gnome-user-guide abrowser-locale
+        for package in language-pack language-pack-gnome libreoffice-help libreoffice-l10n gnome-user-guide abrowser-locale
         do
             echo "apt-get install -y --force-yes --install-recommends ${package}-${language}" >> $CHROOT/tmp/install
             echo "apt-get clean" >> $CHROOT/tmp/install
@@ -300,6 +301,9 @@ export USERFULLNAME="trisquel"
 export HOST="trisquel"
 export BUILD_SYSTEM="Ubuntu"
 EOF
+sed -i '/^autologin-user=/ s/$/\nuser-session=gnome-classic\\n\\/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/15autologin
+sed -i 's/999/1000/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/10adduser
+sed -i 's/ubuntu-2d/gnome-classic/g' $CHROOT/usr/bin/casper-a11y-enable
 
 for SCRIPT in 41apt_cdrom 47une_ubiquity 40install_driver_updates 33enable_apport_crashes 22gnome_panel_data
 do
@@ -359,6 +363,8 @@ deb http://es.archive.trisquel.info/trisquel $CODENAME-security main
 #deb-src http://es.archive.trisquel.info/trisquel $CODENAME-backports main
 EOF
 $C apt-get update
+rm $CHROOT/var/lib/apt/lists/*Translation*
+[ $ARCH = "amd64" ] && rm $CHROOT/var/lib/apt/lists/*i386*
 
 [ -f  $CHROOT/usr/lib/locale/locale-archive ] && rm -v $CHROOT/usr/lib/locale/locale-archive
 ##############################################################################
@@ -463,7 +469,6 @@ $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/p
 fi
 
 [ $DIST = "trisquel" ] && sed 's/\(TimedLogin=.*\)/\1\nDefaultSession=gnome\\n\\/' -i $CHROOT/usr/lib/ubiquity/user-setup/user-setup-apply
-[ $DIST = "trisquel" ] && $C sudo -u gdm gconftool-2 --set --type string --set /apps/gdm/simple-greeter/logo_icon_name distributor-logo
 
 ## INITRD ####################################################################
 $C update-initramfs -u
@@ -483,7 +488,7 @@ done
 
 ## Hosts ##
 echo "" > $CHROOT/etc/hosts
-#echo "" > $CHROOT/etc/resolv.conf
+echo "" > $CHROOT/etc/resolv.conf
 ##############################################################################
 # HONEY
 if [ $DIST = "trisquel-sugar" ]
@@ -513,7 +518,7 @@ lzma -9 $DIST-$ARCH/boot/$INITRD
 mv $DIST-$ARCH/boot/${INITRD}.lzma master/casper/initrd
 
 mv -v $DIST-$ARCH/boot/vmlinuz*  master/casper/vmlinuz
-[ $DIST = "trisquel" ] && cp -v files/initrd.netinst.$ARCH master/casper/initrd.netinst
+#[ $DIST = "trisquel" ] && cp -v files/initrd.netinst.$ARCH master/casper/initrd.netinst
 echo Debootstrap completed succesfully
 }
 
@@ -545,15 +550,15 @@ cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
 
-NAME=${DIST}_${VERSION}_$SUBARCH
+NAME=${DIST}_${VERSION-$(date +%Y%m%d)}_$SUBARCH
 [ $i18n = "true" ] && NAME=${DIST}_${VERSION}-i18n_$SUBARCH
 [ $fsf = "true" ] &&  NAME=${DIST}_${VERSION}-fsf_$SUBARCH
 mkisofs -D -r -V "${DIST} ${VERSION} ${SUBARCH}" -cache-inodes -J -l -b isolinux/isolinux.bin \
    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
-   -o iso/${NAME}-$(date +%Y%m%d).iso master
-isohybrid iso/${NAME}-$(date +%Y%m%d).iso
-cd iso
-md5sum ${NAME}.iso > ${NAME}-$(date +%Y%m%d).iso.md5
+   -o iso/${NAME}.iso master
+isohybrid iso/${NAME}.iso
+cd
+md5sum ${NAME}.iso > ${NAME}.iso.md5
 cd ..
 
 # take one down, and pass it around
@@ -595,14 +600,15 @@ iso)		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
 torrent)	COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
 		;;
 squash)		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
+		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
 		;;
 source)		COLUMNS=500 DO_SOURCE 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
 		;;
 all)		COLUMNS=500 DO_DEBOOTSTRAP 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG || exit 1
 		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
 		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-		COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-		DELETE_CHROOT $CHROOT
+#		COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
+	#	DELETE_CHROOT $CHROOT
 		;;
 esac
 

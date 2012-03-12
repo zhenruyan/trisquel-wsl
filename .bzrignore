@@ -1,6 +1,9 @@
 master/*
 logs/*
 iso/*
+trisquel-*
+triskel-*
 master
 logs
 iso
+doall
