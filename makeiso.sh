@@ -342,6 +342,7 @@ rm $CHROOT/usr/sbin/start $CHROOT/usr/sbin/stop
 
 echo "-- CLEANING UP ---------------------------------------------------------------"
 
+$C apt-get remove -y --force-yes --purge humanity-icon-theme || true
 
 umount $CHROOT/proc
 umount $CHROOT/dev/pts
@@ -401,6 +402,13 @@ fi
 ##############################################################################
 
 ## GDM #######################################################################
+
+if [ $DIST = "trisquel" ] 
+then
+mkdir -p $CHROOT/var/lib/gdm/.local/share/orca/
+cp files/user-settings.conf $CHROOT/var/lib/gdm/.local/share/orca/
+fi
+
 
 if [ $DIST = "trisquel-sugar" ] 
 then
@@ -577,20 +585,12 @@ chmod 644  master/casper/filesystem.squashfs
 $C dpkg -l|grep ^ii |awk '{print $2" "$3}' > master/casper/filesystem.manifest
 df -B 1 $CHROOT |tail -n1|awk '{print $3}' > master/casper/filesystem.size
 [ $i18n = "true" ] && du -bc $CHROOT |tail -n 1|cut  -f1 > master/casper/filesystem.size
-sed -i '/^language-pack/d;
-/^language-support/d;
-/^hunspell/d;
-/^myspell/d;
-/^openoffice.org-hyphenation/d;
-/^openoffice.org-thesaurus/d;
-/^ubiquity/d;
-/^rdate/d;
-/^localechooser-data/d;
-/casper/d;
-/^user-setup/d;
-/^gparted/d;
-/^libdebconfclient0/d;
-/^libdebian-installer/d;' master/casper/filesystem.manifest
+
+for i in ubiquity language-pack language-support hunspell myspell libreoffice-hyphenation libreoffice-thesaurus rdate localechooser-data casper user-setup gparted libdebconfclient0 libdebian-installer abrowser-locale
+do
+grep $i master/casper/filesystem.manifest >> master/casper/filesystem.manifest-remove
+done
+
 }
 
 
