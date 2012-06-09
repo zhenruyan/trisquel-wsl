@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#    Copyright (C) 2004,2005,2006,2007,2008,2009,2010,2011  Rubén Rodríguez <ruben@trisquel.info>
+#    Copyright (C) 2004,2005,2006,2007,2008,2009,2010,2011,2012 Rubén Rodríguez <ruben@trisquel.info>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ fi
 set -e
 
 export TRACKER=http://trisquel.info:6969/announce
-export MIRRORS="http://cdimage.trisquel.info/trisquel-images/ http://gdsol.uta.cl/trisquel/iso/ http://us.archive.trisquel.info/iso/ http://ftp.udc.es/trisquel-iso/ http://es.gnu.org/~ruben/trisquel/ http://ftp.linux.org.tr/trisquel/iso/ http://ftp.rediris.es/mirror/Trisquel/iso/"
+export MIRRORS="http://cdimage.trisquel.info/trisquel-images/ http://gdsol.uta.cl/trisquel/iso/ http://us.archive.trisquel.info/iso/ http://es.gnu.org/~ruben/trisquel/ http://ftp.linux.org.tr/trisquel/iso/ http://ftp.rediris.es/mirror/Trisquel/iso/ http://nl.cdimage.trisquel.info/ ftp://in.archive.trisquel.info/trisquel-iso/ http://ibelin.mx.gnu.org/ http://ftp.linux.org.tr/trisquel/iso/"
 export MIRROR="http://archive.trisquel.info/trisquel/" # The upsream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
 
@@ -120,14 +120,14 @@ deb $MIRROR $CODENAME-security main
 deb-src $MIRROR $CODENAME main
 deb-src $MIRROR $CODENAME-updates main
 deb-src $MIRROR $CODENAME-security main
-$LOCALMIRROR
 EOF
 
 apt-get update
-mkdir source || true
+rm -rf source
+mkdir source
 cd source
 
-for i in $(cut -d" " -f1 ../package.list |sort -u) 
+for i in $(cut -d" " -f1 ../iso/*manifest |sort -u) 
 do
 echo $i
     source=$(apt-cache showsrc $i | grep '^Package: ' | awk '{print $2}')
@@ -173,7 +173,9 @@ CHROOT=$CHROOT
 -------------------------------------------------------------------------
 "
 
-[ -d master ] || cp -a files/master-template master
+rm -rf master
+cp -a files/master-template master
+sed -i 's/FOREGROUND/84B0FF/g' master/isolinux/stdmenu.cfg master/isolinux/gfxboot.cfg
 echo "Trisquel $VERSION \"$CODENAME\" - Release $ARCH ($(date +%Y%m%d))" | sed s/i386/i686/g > master/.disk/info
 echo http://trisquel.info/wiki/$CODENAME > master/.disk/release_notes_url
 
@@ -341,8 +343,9 @@ done
 rm $CHROOT/usr/sbin/start $CHROOT/usr/sbin/stop
 
 echo "-- CLEANING UP ---------------------------------------------------------------"
-
+if [ $DIST != "trisquel-sugar" ]; then
 $C apt-get remove -y --force-yes --purge humanity-icon-theme || true
+fi
 
 umount $CHROOT/proc
 umount $CHROOT/dev/pts
@@ -364,8 +367,7 @@ deb http://es.archive.trisquel.info/trisquel $CODENAME-security main
 #deb-src http://es.archive.trisquel.info/trisquel $CODENAME-backports main
 EOF
 $C apt-get update
-rm $CHROOT/var/lib/apt/lists/*Translation*
-[ $ARCH = "amd64" ] && rm $CHROOT/var/lib/apt/lists/*i386*
+#rm $CHROOT/var/lib/apt/lists/*Translation*
 
 [ -f  $CHROOT/usr/lib/locale/locale-archive ] && rm -v $CHROOT/usr/lib/locale/locale-archive
 ##############################################################################
@@ -412,6 +414,7 @@ fi
 
 if [ $DIST = "trisquel-sugar" ] 
 then
+cp files/artwork/dextrose.png $CHROOT/lib/plymouth/themes/sugar/custom.png
 
 sed -i '/software.html/d' $CHROOT/usr/share/ubiquity-slideshow/slides/index.html $CHROOT/usr/share/ubiquity-slideshow/slides/directory.js
 
@@ -476,6 +479,16 @@ $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/p
 $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/picture_filename /lib/plymouth/themes/sugar/sugar.png
 fi
 
+cat << EOF > $CHROOT/usr/share/gconf/defaults/95_toast
+/apps/gdm/simple-greeter/logo_icon_name sugar-xo
+/desktop/gnome/interface/gtk_theme sugar-72
+/desktop/gnome/interface/icon_theme sugar
+/desktop/gnome/background/color_shading_type solid
+/desktop/gnome/background/primary_color \#282828282828
+/desktop/gnome/background/picture_filename /lib/plymouth/themes/sugar/sugar.png
+EOF
+$C update-gconf-defaults
+
 [ $DIST = "trisquel" ] && sed 's/\(TimedLogin=.*\)/\1\nDefaultSession=gnome\\n\\/' -i $CHROOT/usr/lib/ubiquity/user-setup/user-setup-apply
 
 ## INITRD ####################################################################
@@ -503,9 +516,20 @@ if [ $DIST = "trisquel-sugar" ]
 then
     sh files/honey.sh
     find honey -type d -exec chmod 755 {} \;
+    find honey -type f -exec chmod a+r {} \;
     cp -a honey/*.activity $CHROOT/opt/sweets/
     rename s/.activity// $CHROOT/opt/sweets/*
     cp files/activities.defaults $CHROOT/opt/sweets/sugar/share/sugar/data/
+cat << EOF > $CHROOT/etc/rc.local
+#!/bin/sh
+find /opt -name aclient.so -exec file {} \;
+find /opt -name aclient.so -exec touch {} \;
+find /opt -name aclient.so -exec ldd {} \;
+
+exit 0
+EOF
+
+grep "import logging" $CHROOT/opt/sweets/TamTamMini/TamTamMini.py || sed '/import pygtk/ s/$/\nimport logging/' -i $CHROOT/opt/sweets/TamTamMini/TamTamMini.py
 
 #    for i in TamTamEdit TamTamJam TamTamSynthLab
 #    do
@@ -534,9 +558,9 @@ DO_TORRENT(){
 
 [ $ARCH = "i386" ] &&  ARCH=i686
 
-FILE=${DIST}_${VERSION}_${ARCH}-$(date +%Y%m%d).iso
-[ $i18n = "true" ] && FILE=${DIST}_${VERSION}-i18n_${ARCH}-$(date +%Y%m%d).iso
-[ $fsf = "true" ] && FILE=${DIST}_${VERSION}-fsf_${ARCH}-$(date +%Y%m%d).iso
+FILE=${DIST}_${VERSION}_${ARCH}.iso
+[ $i18n = "true" ] && FILE=${DIST}_${VERSION}-i18n_${ARCH}.iso
+[ $fsf = "true" ] && FILE=${DIST}_${VERSION}-fsf_${ARCH}.iso
 
 [ $DIST != "trisquel" ] && EXTRACOMMENT=", $DIST edition"
 
@@ -553,7 +577,7 @@ DO_ISO(){
 # builds the CD iso image using the squashfs compressed filesystem
 
 cd master
-find casper -type f | xargs md5sum >> md5sum.txt
+find casper -type f | xargs md5sum > md5sum.txt
 cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
@@ -567,6 +591,7 @@ mkisofs -D -r -V "${DIST} ${VERSION} ${SUBARCH}" -cache-inodes -J -l -b isolinux
    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
    -o iso/${NAME}.iso master
 isohybrid iso/${NAME}.iso
+cp master/casper/filesystem.manifest iso/${NAME}.manifest
 cd iso
 md5sum ${NAME}.iso > ${NAME}.iso.md5
 cd ..
@@ -609,8 +634,8 @@ source)		COLUMNS=500 DO_SOURCE 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
 all)		COLUMNS=500 DO_DEBOOTSTRAP 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG || exit 1
 		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
 		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-#		COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-		DELETE_CHROOT $CHROOT
+	#	COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
+	#	DELETE_CHROOT $CHROOT
 		;;
 esac
 

@@ -1,3 +1,6 @@
+vu.lux.olpc.Maze
+org.laptop.sugar.GetIABooksActivity
+org.laptop.Pippy
 org.laptop.AbiWordActivity
 org.laptop.Calculate
 org.laptop.Chat
@@ -18,7 +21,6 @@ org.sugarlabs.InfoSlicer
 org.worldwideworkshop.olpc.FlipSticks
 org.worldwideworkshop.olpc.JigsawPuzzle
 org.worldwideworkshop.olpc.SliderPuzzle
-org.laptop.community.Colors
 org.squeak.FreeCell
 org.laptop.TamTamEdit
 org.laptop.TamTamJam
@@ -30,7 +32,6 @@ org.worldwideworkshop.olpc.storybuilder
 org.worldwideworkshop.PollBuilder
 org.gnome.Labyrinth
 org.laptop.RecordActivity
-org.laptop.Oficina
 tv.alterna.Clock
 org.laptop.physics
 org.laptop.sugar.GetIABooksActivity
