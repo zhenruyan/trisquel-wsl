@@ -22,10 +22,10 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-set -e
+#set -e
 
 export TRACKER=http://trisquel.info:6969/announce
-export MIRRORS="http://cdimage.trisquel.info/trisquel-images/ http://gdsol.uta.cl/trisquel/iso/ http://us.archive.trisquel.info/iso/ http://es.gnu.org/~ruben/trisquel/ http://ftp.linux.org.tr/trisquel/iso/ http://ftp.rediris.es/mirror/Trisquel/iso/ http://nl.cdimage.trisquel.info/ ftp://in.archive.trisquel.info/trisquel-iso/ http://ibelin.mx.gnu.org/ http://ftp.linux.org.tr/trisquel/iso/"
+export MIRRORS="http://cdimage.trisquel.info/trisquel-images/ http://us.archive.trisquel.info/iso/ http://es.gnu.org/~ruben/trisquel/"
 export MIRROR="http://archive.trisquel.info/trisquel/" # The upsream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
 
@@ -87,7 +87,7 @@ export VERSION=$(wget -q -O - http://archive.trisquel.info/trisquel/dists/$CODEN
 [ $CODENAME = dagda ] && UPSTREAM=natty
 [ $CODENAME = brigantia ] && UPSTREAM=oneiric
 
-export LOCALMIRROR="deb http://devel.trisquel.info/trisquel/$UPSTREAM $UPSTREAM main" # The optional local testing repository
+export LOCALMIRROR="deb http://devel.trisquel.info/trisquel/$CODENAME $CODENAME main" # The optional local testing repository
 
 echo $* | grep -q i18n && i18n=true || i18n=false
 # Make a FSF membercard image?
@@ -236,7 +236,7 @@ echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 echo "DIST=$DIST" > $CHROOT/tmp/install
 echo 'LANG=C
 apt-get update
-apt-get install -y --force-yes --no-install-recommends linux-image-generic
+apt-get install -y --force-yes --no-install-recommends linux-image-generic-lts-belenos xserver-xorg-lts-quantal xserver-xorg-video-all-lts-quantal libgl1-mesa-glx-lts-quantal
 apt-get clean
 apt-get install -y --force-yes --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | grep -v \| cut -d: -f2)
@@ -284,10 +284,20 @@ then
     echo "apt-get clean" >> $CHROOT/tmp/install
 fi
 
+echo "apt-get --force-yes -y dist-upgrade" >> $CHROOT/tmp/install
+echo "apt-get clean" >> $CHROOT/tmp/install
+
 $C sh /tmp/install
-$C apt-get --force-yes -y dist-upgrade
 
 ## POST-CONFIGURATION ########################################################
+
+# Enable vblank sync, specially for nouveau
+cat << EOF > $CHROOT/etc/X11/xorg.conf
+Section "Device"
+ Identifier "Default"
+ Option "GLXVBlank" "on"
+EndSection
+EOF
 
 [ $i18n = "true" ] && sed -i 's/500 4000 10000/4500 5000 10000/' $CHROOT/lib/partman/recipes/20trisquel
 ##############################################################################
@@ -303,14 +313,14 @@ export USERFULLNAME="trisquel"
 export HOST="trisquel"
 export BUILD_SYSTEM="Ubuntu"
 EOF
-sed -i '/^autologin-user=/ s/$/\nuser-session=gnome-classic\\n\\/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/15autologin
-sed -i 's/999/1000/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/10adduser
-sed -i 's/ubuntu-2d/gnome-classic/g' $CHROOT/usr/bin/casper-a11y-enable
+#sed -i '/^autologin-user=/ s/$/\nuser-session=gnome-classic\\n\\/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/15autologin
+#sed -i 's/999/1000/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/10adduser
+#sed -i 's/ubuntu-2d/gnome-classic/g' $CHROOT/usr/bin/casper-a11y-enable
 
-for SCRIPT in 41apt_cdrom 47une_ubiquity 40install_driver_updates 33enable_apport_crashes 22gnome_panel_data
-do
-    rm $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/$SCRIPT
-done
+#for SCRIPT in 41apt_cdrom 47une_ubiquity 40install_driver_updates 33enable_apport_crashes 22gnome_panel_data
+#do
+#    rm $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/$SCRIPT
+#done
 rm $CHROOT/usr/share/initramfs-tools/scripts/casper-premount/10driver_updates
 
 if [ $DIST = "trisquel-mini" ]
@@ -477,7 +487,6 @@ $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/interface/ic
 $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/color_shading_type solid
 $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/primary_color \#282828282828
 $C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/picture_filename /lib/plymouth/themes/sugar/sugar.png
-fi
 
 cat << EOF > $CHROOT/usr/share/gconf/defaults/95_toast
 /apps/gdm/simple-greeter/logo_icon_name sugar-xo
@@ -487,9 +496,11 @@ cat << EOF > $CHROOT/usr/share/gconf/defaults/95_toast
 /desktop/gnome/background/primary_color \#282828282828
 /desktop/gnome/background/picture_filename /lib/plymouth/themes/sugar/sugar.png
 EOF
+fi
+
 $C update-gconf-defaults
 
-[ $DIST = "trisquel" ] && sed 's/\(TimedLogin=.*\)/\1\nDefaultSession=gnome\\n\\/' -i $CHROOT/usr/lib/ubiquity/user-setup/user-setup-apply
+# [ $DIST = "trisquel" ] && sed 's/\(TimedLogin=.*\)/\1\nDefaultSession=gnome\\n\\/' -i $CHROOT/usr/lib/ubiquity/user-setup/user-setup-apply
 
 ## INITRD ####################################################################
 $C update-initramfs -u
@@ -550,7 +561,8 @@ lzma -9 $DIST-$ARCH/boot/$INITRD
 mv $DIST-$ARCH/boot/${INITRD}.lzma master/casper/initrd
 
 mv -v $DIST-$ARCH/boot/vmlinuz*  master/casper/vmlinuz
-#[ $DIST = "trisquel" ] && cp -v files/initrd.netinst.$ARCH master/casper/initrd.netinst
+rm -f master/casper/initrd.netinst
+[ $DIST = "trisquel" ] && cp -v files/initrd.netinst.$ARCH master/casper/initrd.netinst
 echo Debootstrap completed succesfully
 }
 
@@ -582,7 +594,7 @@ cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
 
-VERSION=$VERSION-$(date +%Y%m%d)
+#VERSION=$VERSION-$(date +%Y%m%d)
 
 NAME=${DIST}_${VERSION}_$SUBARCH
 [ $i18n = "true" ] && NAME=${DIST}_${VERSION}-i18n_$SUBARCH
@@ -634,8 +646,8 @@ source)		COLUMNS=500 DO_SOURCE 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
 all)		COLUMNS=500 DO_DEBOOTSTRAP 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG || exit 1
 		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
 		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-	#	COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-	#	DELETE_CHROOT $CHROOT
+		COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
+		DELETE_CHROOT $CHROOT
 		;;
 esac
 

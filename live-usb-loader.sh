@@ -42,7 +42,8 @@ umount $DEV*
 mount -o loop $ISO $ISOTMP
 mkfs.vfat -I -F16 $DEV
 sync
-mount -o sync $DEV $DEVTMP
+#mount -o sync $DEV $DEVTMP
+mount $DEV $DEVTMP
 cp -vr $ISOTMP/* $DEVTMP
 sync
 
