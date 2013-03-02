@@ -236,7 +236,7 @@ echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 echo "DIST=$DIST" > $CHROOT/tmp/install
 echo 'LANG=C
 apt-get update
-apt-get install -y --force-yes --no-install-recommends linux-image-generic-lts-belenos xserver-xorg-lts-quantal xserver-xorg-video-all-lts-quantal libgl1-mesa-glx-lts-quantal
+apt-get install -y --force-yes --no-install-recommends linux-image-generic
 apt-get clean
 apt-get install -y --force-yes --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | grep -v \| cut -d: -f2)
