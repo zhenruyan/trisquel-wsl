@@ -232,11 +232,15 @@ mount -t sysfs none $CHROOT/sys
 mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
+KERNEL=linux-image-generic
+[ $ARCH = i386 ] && KERNEL=linux-image-generic-pae
+
 # package install
-echo "DIST=$DIST" > $CHROOT/tmp/install
+echo "KERNEL=$KERNEL" > $CHROOT/tmp/install
+echo "DIST=$DIST" >> $CHROOT/tmp/install
 echo 'LANG=C
 apt-get update
-apt-get install -y --force-yes --no-install-recommends linux-image-generic
+apt-get install -y --force-yes --no-install-recommends $KERNEL
 apt-get clean
 apt-get install -y --force-yes --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | grep -v \| cut -d: -f2)
@@ -421,6 +425,11 @@ mkdir -p $CHROOT/var/lib/gdm/.local/share/orca/
 cp files/user-settings.conf $CHROOT/var/lib/gdm/.local/share/orca/
 fi
 
+echo "[org.gnome.desktop.interface]
+toolkit-accessibility=false
+" >> $CHROOT/usr/share/glib-2.0/schemas/99_accessibility.gschema.override
+  $C glib-compile-schemas /usr/share/glib-2.0/schemas
+
 
 if [ $DIST = "trisquel-sugar" ] 
 then
@@ -582,7 +591,7 @@ echo -n $i$FILE','
 done | sed 's/,$//')
 
 cd iso
-$MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME$EXTRACOMMENT. $ARCH Installable Live CD" -w $SEEDS $FILE
+echo $MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME$EXTRACOMMENT. $ARCH Installable Live CD" -w $SEEDS $FILE
 }
 
 DO_ISO(){
@@ -623,7 +632,7 @@ $C dpkg -l|grep ^ii |awk '{print $2" "$3}' > master/casper/filesystem.manifest
 df -B 1 $CHROOT |tail -n1|awk '{print $3}' > master/casper/filesystem.size
 [ $i18n = "true" ] && du -bc $CHROOT |tail -n 1|cut  -f1 > master/casper/filesystem.size
 
-for i in ubiquity language-pack language-support hunspell myspell libreoffice-hyphenation libreoffice-thesaurus rdate localechooser-data casper user-setup gparted libdebconfclient0 libdebian-installer abrowser-locale
+for i in ubiquity language-pack language-support hunspell myspell libreoffice-hyphenation libreoffice-thesaurus rdate localechooser-data casper user-setup gparted libdebconfclient0 libdebian-installer
 do
 grep $i master/casper/filesystem.manifest >> master/casper/filesystem.manifest-remove
 done

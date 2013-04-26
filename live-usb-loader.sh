@@ -40,7 +40,7 @@ DEVTMP=$(mktemp -d)
 
 umount $DEV*
 mount -o loop $ISO $ISOTMP
-mkfs.vfat -I -F16 $DEV
+mkfs.vfat -I -F32 $DEV
 sync
 #mount -o sync $DEV $DEVTMP
 mount $DEV $DEVTMP
@@ -48,7 +48,7 @@ cp -vr $ISOTMP/* $DEVTMP
 sync
 
 dd if=/dev/zero of=$DEVTMP/casper-rw bs=1M count=$PERSISTENCESIZE
-mkfs.ext2 -F $DEVTMP/casper-rw 
+mkfs.ext3 -F $DEVTMP/casper-rw 
 sync
 
 mv $DEVTMP/isolinux $DEVTMP/syslinux
