@@ -529,6 +529,8 @@ done
 ## Hosts ##
 echo "" > $CHROOT/etc/hosts
 echo "" > $CHROOT/etc/resolv.conf
+rm $CHROOT//etc/resolvconf/resolv.conf.d/original
+rm $CHROOT//etc/resolvconf/resolv.conf.d/tail
 ##############################################################################
 # HONEY
 if [ $DIST = "trisquel-sugar" ]
