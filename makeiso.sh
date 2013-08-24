@@ -233,7 +233,6 @@ mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
 KERNEL=linux-image-generic
-[ $ARCH = i386 ] && KERNEL=linux-image-generic-pae
 
 # package install
 echo "KERNEL=$KERNEL" > $CHROOT/tmp/install
