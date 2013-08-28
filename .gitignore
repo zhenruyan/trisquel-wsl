@@ -9,3 +9,4 @@ iso
 doall
 source/*
 source
+files/initrd.netinst.*
