@@ -146,7 +146,7 @@ echo -n ${i}iso/trisquel_${VERSION}_sources.iso','
 done | sed 's/,$//')
 
 cd iso
-$MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME Source DVD" -w $SEEDS $FILE
+$MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME Source DVD" -w $SEEDS trisquel_${VERSION}_sources.iso
 
 }
 
@@ -592,7 +592,7 @@ echo -n $i$FILE','
 done | sed 's/,$//')
 
 cd iso
-echo $MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME$EXTRACOMMENT. $ARCH Installable Live CD" -w $SEEDS $FILE
+$MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME$EXTRACOMMENT. $ARCH Installable Live CD" -w $SEEDS $FILE
 }
 
 DO_ISO(){
