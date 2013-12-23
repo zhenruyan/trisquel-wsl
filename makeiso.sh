@@ -135,7 +135,7 @@ echo $i
 done
 
 # Some shy packages may need to be asked directly
-apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux gnome-python-extras
+apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux gnome-python-extras efibootmgr
 
 cd ..
 mkisofs -f -J  -joliet-long -r  -V "trisquel-$VERSION src" -o iso/trisquel_${VERSION}_sources.iso source
@@ -223,6 +223,7 @@ deb $MIRROR $CODENAME main
 deb $MIRROR $CODENAME-updates main
 deb $MIRROR $CODENAME-security main
 $LOCALMIRROR
+deb http://ubuntu.activitycentral.com/helpers/repos/precise/ precise main
 EOF
 
 # prepare the chroot for installing extra packages
@@ -316,36 +317,25 @@ export USERFULLNAME="trisquel"
 export HOST="trisquel"
 export BUILD_SYSTEM="Ubuntu"
 EOF
-#sed -i '/^autologin-user=/ s/$/\nuser-session=gnome-classic\\n\\/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/15autologin
-#sed -i 's/999/1000/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/10adduser
-#sed -i 's/ubuntu-2d/gnome-classic/g' $CHROOT/usr/bin/casper-a11y-enable
 
-#for SCRIPT in 41apt_cdrom 47une_ubiquity 40install_driver_updates 33enable_apport_crashes 22gnome_panel_data
-#do
-#    rm $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/$SCRIPT
-#done
 rm $CHROOT/usr/share/initramfs-tools/scripts/casper-premount/10driver_updates
 
-if [ $DIST = "trisquel-mini" ]
-then
-    sed -i 's/lubuntu/trisquel-mini/' $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/15autologin
-fi
-
 mkdir -p $CHROOT/etc/skel/.local/share
+
+[ -d master/fsf ] && rm -rf master/fsf
+cp files/artwork/$CODENAME/back.jpg master/isolinux/back.jpg
 
 ##############################################################################
 
 ## Adduser ##
 sed -i 's/#ADD_EXTRA_GROUPS=1/ADD_EXTRA_GROUPS=1/g' $CHROOT/etc/adduser.conf
 sed -i 's/DIR_MODE=0755/DIR_MODE=0751/g' $CHROOT/etc/adduser.conf
-[ $DIST = "trisquel" ] && \
-sed -i 's/#EXTRA_GROUPS.*/EXTRA_GROUPS="sambashare"/g' $CHROOT/etc/adduser.conf
+
 ##############################################################################
 
 ## Hardware ID's ##
 $C update-pciids
 $C update-usbids
-#wget --no-check-certificate https://github.com/gregkh/usbutils/raw/master/usb.ids -o /dev/null -O /var/lib/usbutils/usb.ids
 ##############################################################################
 
 # We can enable the init scripts now
@@ -364,8 +354,6 @@ umount $CHROOT/proc
 umount $CHROOT/dev/pts
 umount $CHROOT/sys
 echo "" > $CHROOT/etc/apt/sources.list
-$C apt-get clean
-$C apt-get autoclean
 
 ## APT ##
 cat << EOF > $CHROOT/etc/apt/sources.list
@@ -380,135 +368,22 @@ deb http://es.archive.trisquel.info/trisquel $CODENAME-security main
 #deb-src http://es.archive.trisquel.info/trisquel $CODENAME-backports main
 EOF
 $C apt-get update
-#rm $CHROOT/var/lib/apt/lists/*Translation*
+$C apt-get clean
+$C apt-get autoclean
+rm $CHROOT/var/lib/apt/lists/*Translation*
 
 [ -f  $CHROOT/usr/lib/locale/locale-archive ] && rm -v $CHROOT/usr/lib/locale/locale-archive
+
+rm -rf $CHROOT/var/cache/apt-xapian-index/*
 ##############################################################################
 
-## FSF MEMBERCARD ############################################################
 
-if [ $fsf = "true" ]
-then
-
-cp files/artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
-cp files/artwork/$CODENAME/grub-fsf.png $CHROOT/usr/share/backgrounds/trisquel-grub-custom.png
-cp files/artwork/fsf-logo.png $CHROOT/lib/plymouth/themes/trisquel-logo/custom.png
-cp -a files/fsf master/fsf
-
-cat << EOF > $CHROOT/etc/xdg/autostart/fsfmembercard.desktop
-#!/usr/bin/env xdg-open
-
-[Desktop Entry]
-Encoding=UTF-8
-Version=1.0
-Type=Application
-Terminal=false
-Exec=bash -c "[ -f /cdrom/fsf/index.html ] && x-www-browser /cdrom/fsf/index.html"
-Name=fsfmembercard
-Comment=fsfmembercard
-Icon=www
-EOF
-
-else
-[ -d master/fsf ] && rm -rf master/fsf
-cp files/artwork/$CODENAME/back.jpg master/isolinux/back.jpg
-fi
-
-##############################################################################
-
-## GDM #######################################################################
-
-if [ $DIST = "trisquel" ] 
-then
-mkdir -p $CHROOT/var/lib/gdm/.local/share/orca/
-cp files/user-settings.conf $CHROOT/var/lib/gdm/.local/share/orca/
-fi
-
-echo "[org.gnome.desktop.interface]
-toolkit-accessibility=false
-" >> $CHROOT/usr/share/glib-2.0/schemas/99_accessibility.gschema.override
-  $C glib-compile-schemas /usr/share/glib-2.0/schemas
-
-
-if [ $DIST = "trisquel-sugar" ] 
-then
-cp files/artwork/dextrose.png $CHROOT/lib/plymouth/themes/sugar/custom.png
-
-sed -i '/software.html/d' $CHROOT/usr/share/ubiquity-slideshow/slides/index.html $CHROOT/usr/share/ubiquity-slideshow/slides/directory.js
-
-cat << EOF > $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/17sugaraskname
-#!/bin/sh
-PREREQ=""
-
-prereqs(){
- echo "\$PREREQ"
-}
-
-case \$1 in
-prereqs)
-    prereqs
-    exit 0
-    ;;
-esac
-
-echo '/desktop/sugar/user/default_nick "disabled"'  > /root/usr/share/gconf/defaults/17_sugar-askname
-chroot /root update-gconf-defaults
-EOF
-
-chmod 755 $CHROOT/usr/share/initramfs-tools/scripts/casper-bottom/17sugaraskname
-
-cat << EOF > $CHROOT/usr/share/gconf/defaults/16_sugar-wallpapers
-/desktop/gnome/background/picture_filename "/lib/plymouth/themes/sugar/sugar.png"
-/desktop/gnome/background/picture_options "stretched"
-/desktop/gnome/background/color_shading_type "solid"
-/desktop/gnome/background/primary_color "#000000"
-EOF
-
-mkdir -p $CHROOT/usr/share/backgrounds/
-cp files/artwork/sugar/sugar-grub.png $CHROOT/usr/share/backgrounds/trisquel-grub-custom.png
-cp files/artwork/sugar/back-sugar.jpg master/isolinux/back.jpg
-
-for TRANSLATION in en_US es_ES fr_FR de_DE it_IT el_GR nl_NL ta_IN ru_RU vi_VN quz_PE aym_PE
-do
-    SHORT=$( echo $TRANSLATION | cut -d_ -f1 )
-    echo $SHORT >> master/isolinux/langlist
-    echo "$TRANSLATION.UTF-8 UTF-8" >> $CHROOT/var/lib/locales/supported.d/sugar
-done
-
-$C locale-gen
-
-sort -u < master/isolinux/langlist > master/isolinux/langlist-tmp
-mv master/isolinux/langlist-tmp master/isolinux/langlist
-
-cd $CHROOT/usr/share/themes/
-ln -s ../../../opt/sweets/sugar-artwork/share/themes/* .
-cd $CHROOT/usr/share/pixmaps/
-ln -s ../../../opt/sweets/sugar/share/icons/hicolor/scalable/apps/sugar-xo.svg .
-cd $CHROOT/usr/share/icons/
-ln -s ../../../opt/sweets/sugar-artwork/share/icons/* .
-cd $CHROOT/usr/lib/gtk-2.0/2.10.0/engines/
-ln -s ../../../../../opt/sweets/sugar-artwork/lib/gtk-2.0/2.10.0/engines/libsugar.so .
-cd $WORKDIR
-$C sudo -u gdm gconftool-2 --set --type string --set /apps/gdm/simple-greeter/logo_icon_name sugar-xo
-$C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/interface/gtk_theme sugar-72
-$C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/interface/icon_theme sugar
-$C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/color_shading_type solid
-$C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/primary_color \#282828282828
-$C sudo -u gdm gconftool-2 --set --type string --set /desktop/gnome/background/picture_filename /lib/plymouth/themes/sugar/sugar.png
-
-cat << EOF > $CHROOT/usr/share/gconf/defaults/95_toast
-/apps/gdm/simple-greeter/logo_icon_name sugar-xo
-/desktop/gnome/interface/gtk_theme sugar-72
-/desktop/gnome/interface/icon_theme sugar
-/desktop/gnome/background/color_shading_type solid
-/desktop/gnome/background/primary_color \#282828282828
-/desktop/gnome/background/picture_filename /lib/plymouth/themes/sugar/sugar.png
-EOF
-fi
+echo "Running custom script for $DIST"
+[ -x files/scripts/$DIST ] && files/scripts/$DIST
+[ $fsf = "true" ] && files/scripts/fsf
+echo "Done running custom scripts"
 
 $C update-gconf-defaults
-
-# [ $DIST = "trisquel" ] && sed 's/\(TimedLogin=.*\)/\1\nDefaultSession=gnome\\n\\/' -i $CHROOT/usr/lib/ubiquity/user-setup/user-setup-apply
 
 ## INITRD ####################################################################
 $C update-initramfs -u
@@ -532,36 +407,6 @@ echo "" > $CHROOT/etc/resolv.conf
 rm $CHROOT//etc/resolvconf/resolv.conf.d/original
 rm $CHROOT//etc/resolvconf/resolv.conf.d/tail
 ##############################################################################
-# HONEY
-if [ $DIST = "trisquel-sugar" ]
-then
-    sh files/honey.sh
-    find honey -type d -exec chmod 755 {} \;
-    find honey -type f -exec chmod a+r {} \;
-    cp -a honey/*.activity $CHROOT/opt/sweets/
-    rename s/.activity// $CHROOT/opt/sweets/*
-    cp files/activities.defaults $CHROOT/opt/sweets/sugar/share/sugar/data/
-cat << EOF > $CHROOT/etc/rc.local
-#!/bin/sh
-find /opt -name aclient.so -exec file {} \;
-find /opt -name aclient.so -exec touch {} \;
-find /opt -name aclient.so -exec ldd {} \;
-
-exit 0
-EOF
-
-grep "import logging" $CHROOT/opt/sweets/TamTamMini/TamTamMini.py || sed '/import pygtk/ s/$/\nimport logging/' -i $CHROOT/opt/sweets/TamTamMini/TamTamMini.py
-
-#    for i in TamTamEdit TamTamJam TamTamSynthLab
-#    do
-#        rm $CHROOT/opt/sweets/$i/common -rf
-#        cd $CHROOT/opt/sweets/$i
-#        ln -s ../TamTamMini/common .
-#    done
-cd $WORKDIR
-rm honey -rf
-fi
-
 
 #update the kernel image in the master dir
 INITRD=$( basename $DIST-$ARCH/boot/initrd.img* )
@@ -571,8 +416,6 @@ lzma -9 $DIST-$ARCH/boot/$INITRD
 mv $DIST-$ARCH/boot/${INITRD}.lzma master/casper/initrd
 
 mv -v $DIST-$ARCH/boot/vmlinuz*  master/casper/vmlinuz
-rm -f master/casper/initrd.netinst
-[ $DIST = "trisquel" ] && cp -v files/initrd.netinst.$ARCH master/casper/initrd.netinst
 echo Debootstrap completed succesfully
 }
 
@@ -604,6 +447,11 @@ cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
 
+[ $ARCH = "amd64" ] && cp files/EFI master -a
+
+cp files/repo/$ARCH/pool master -a
+cp files/repo/$ARCH/dists master -a
+
 #VERSION=$VERSION-$(date +%Y%m%d)
 
 NAME=${DIST}_${VERSION}_$SUBARCH
@@ -611,7 +459,7 @@ NAME=${DIST}_${VERSION}_$SUBARCH
 [ $fsf = "true" ] &&  NAME=${DIST}_${VERSION}-fsf_$SUBARCH
 mkisofs -D -r -V "${DIST} ${VERSION} ${SUBARCH}" -cache-inodes -J -l -b isolinux/isolinux.bin \
    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
-   -o iso/${NAME}.iso master
+   -hide-joliet /pool -hide-joliet /dists -o iso/${NAME}.iso master
 isohybrid iso/${NAME}.iso
 cp master/casper/filesystem.manifest iso/${NAME}.manifest
 cd iso

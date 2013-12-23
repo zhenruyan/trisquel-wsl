@@ -1,0 +1,5 @@
+mkdir -p $CHROOT/var/lib/gdm/.local/share/orca/
+cp files/user-settings.conf $CHROOT/var/lib/gdm/.local/share/orca/
+sed -i 's/#EXTRA_GROUPS.*/EXTRA_GROUPS="sambashare"/g' $CHROOT/etc/adduser.conf
+cp -v files/initrd.netinst.$ARCH master/casper/initrd.netinst
+
