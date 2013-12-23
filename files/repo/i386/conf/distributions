@@ -1,0 +1,15 @@
+# Toutatis
+
+Origin: Trisquel
+Label: Trisquel
+Suite: toutatis
+Version: 6.0.1
+Codename: toutatis
+Architectures: i386
+Components: main
+UDebComponents: main
+Contents:
+Log: toutatis.log
+Description: Trisquel GNU/Linux packages
+SignWith: B4EFB9F38D8AEBF1
+
