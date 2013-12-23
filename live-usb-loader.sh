@@ -44,7 +44,7 @@ mkfs.vfat -I -F32 $DEV
 sync
 #mount -o sync $DEV $DEVTMP
 mount $DEV $DEVTMP
-cp -vr $ISOTMP/* $DEVTMP
+cp -vr $ISOTMP/* $ISOTMP/.disk $DEVTMP
 sync
 
 dd if=/dev/zero of=$DEVTMP/casper-rw bs=1M count=$PERSISTENCESIZE
