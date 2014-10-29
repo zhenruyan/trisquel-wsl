@@ -22,10 +22,10 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-#set -e
+set -e
 
 export TRACKER=http://trisquel.info:6969/announce
-export MIRRORS="http://cdimage.trisquel.info/trisquel-images/ http://us.archive.trisquel.info/iso/ http://es.gnu.org/~ruben/trisquel/"
+export MIRRORS="http://cdimage.trisquel.info/trisquel-images/ http://us.archive.trisquel.info/iso/ http://in.archive.trisquel.info/trisquel-iso/ http://mirror.cedia.org.ec/trisquel.iso/ http://mirrors.serverhost.ro/trisquel/iso/ http://cn.archive.trisquel.info/trisquel-images/ http://ftp.caliu.cat/pub/distribucions/trisquel/iso/ http://mirrors.knoesis.org/trisquel/images/"
 export MIRROR="http://archive.trisquel.info/trisquel/" # The upsream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
 
@@ -99,6 +99,8 @@ else
     fsf=false
 fi
 
+[ $DIST = trisquel ] && i18n=true
+
 export WORKDIR=$PWD
 export DEBIAN_FRONTEND=noninteractive
 export CHROOT=$PWD/$DIST-$ARCH
@@ -129,13 +131,14 @@ cd source
 
 for i in $(cut -d" " -f1 ../iso/*manifest |sort -u) 
 do
-echo $i
+i=$(echo $i| sed 's/:.*//')
+    echo Package: $i
     source=$(apt-cache showsrc $i | grep '^Package: ' | awk '{print $2}')
     apt-get source -d $source || echo $i:$source >> ../NOT-FOUND
 done
 
 # Some shy packages may need to be asked directly
-apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux gnome-python-extras efibootmgr
+apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux gnome-python-extras efibootmgr shim grub2
 
 cd ..
 mkisofs -f -J  -joliet-long -r  -V "trisquel-$VERSION src" -o iso/trisquel_${VERSION}_sources.iso source
@@ -147,6 +150,8 @@ done | sed 's/,$//')
 
 cd iso
 $MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME Source DVD" -w $SEEDS trisquel_${VERSION}_sources.iso
+md5sum trisquel_${VERSION}_sources.iso > trisquel_${VERSION}_sources.iso.md5
+gpg --default-key 8D8AEBF1 -ba trisquel_${VERSION}_sources.iso
 
 }
 
@@ -154,6 +159,7 @@ DELETE_CHROOT() {
 if [ -d $1 ]
 then
     echo "Umounting and removing $1"
+    fuser -k $1 || true
     for MOUNT in $1/proc $1/sys $1/dev/pts $1/tmp $1
     do 
         umount $MOUNT || true
@@ -178,6 +184,8 @@ cp -a files/master-template master
 sed -i 's/FOREGROUND/84B0FF/g' master/isolinux/stdmenu.cfg master/isolinux/gfxboot.cfg
 echo "Trisquel $VERSION \"$CODENAME\" - Release $ARCH ($(date +%Y%m%d))" | sed s/i386/i686/g > master/.disk/info
 echo http://trisquel.info/wiki/$CODENAME > master/.disk/release_notes_url
+touch master/.disk/base_installable
+echo 'full_cd/single' > master/.disk/cd_type
 
 TXTCFG=files/$DIST.cfg
 [ $i18n = "true" ] && TXTCFG=files/$DIST-i18n.cfg
@@ -188,13 +196,13 @@ DELETE_CHROOT $CHROOT
 # debootstrab the base system
 mkdir $CHROOT
 #[ $i18n = "false" ] && mount -t tmpfs none -o size=2500M $CHROOT
-mount -t tmpfs none -o size=5000M $CHROOT
+mount -t tmpfs none -o size=7000M $CHROOT
 debootstrap --arch=$ARCH $CODENAME $CHROOT $MIRROR files/debootstrap
 
 # Disable the service management scripts
-SCRIPTS="sbin/start-stop-daemon usr/sbin/invoke-rc.d usr/sbin/service"
+SCRIPTS="sbin/start-stop-daemon usr/sbin/invoke-rc.d usr/sbin/service sbin/start sbin/initctl"
 for i in $SCRIPTS
-do
+do  echo Disabling $CHROOT/$i
     mv "$CHROOT/$i" "$CHROOT/$i.REAL"
     cat <<EOF > "$CHROOT/$i"
 #!/bin/sh
@@ -222,8 +230,6 @@ cat << EOF > $CHROOT/etc/apt/sources.list
 deb $MIRROR $CODENAME main
 deb $MIRROR $CODENAME-updates main
 deb $MIRROR $CODENAME-security main
-$LOCALMIRROR
-deb http://ubuntu.activitycentral.com/helpers/repos/precise/ precise main
 EOF
 
 # prepare the chroot for installing extra packages
@@ -233,15 +239,16 @@ mount -t sysfs none $CHROOT/sys
 mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
-KERNEL=linux-image-generic
+KERNEL=linux-lowlatency
 
-# package install
+# package intall
 echo "KERNEL=$KERNEL" > $CHROOT/tmp/install
 echo "DIST=$DIST" >> $CHROOT/tmp/install
 echo 'LANG=C
 apt-get update
 apt-get install -y --force-yes --no-install-recommends $KERNEL
 apt-get clean
+apt-get install -y --force-yes --no-install-recommends $DIST language-selector-gnome
 apt-get install -y --force-yes --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | grep -v \| cut -d: -f2)
 apt-get clean
@@ -266,12 +273,13 @@ apt-get clean
 if [ $i18n = "true" ] 
 then
     echo "Making an i18n image"
-    LANGSUPPORT="en es pt fr sv de it uk zh-hans ru pl nl ja zh-hant gl ca da hu cs nb fi et el sr sl sk ro bg eu ko nn lt vi pa lv ar he th ga id hi ta eo ast tr oc nds sq km hr"
+    LANGSUPPORT="en es pt fr sv de it uk zh-hans ru pl nl ja zh-hant gl ca da hu cs nb fi et el sr sl sk ro bg eu ko nn lt vi pa lv ar he th ga id hi ta eo ast tr oc nds sq km hr tl"
     for language in $LANGSUPPORT
     do
-        for package in language-pack language-pack-gnome libreoffice-help libreoffice-l10n gnome-user-guide abrowser-locale
+        for package in language-pack language-pack-gnome libreoffice-help libreoffice-l10n gnome-user-guide abrowser-locale gimp-help hunspell myspell
         do
-            echo "apt-get install -y --force-yes --install-recommends ${package}-${language}" >> $CHROOT/tmp/install
+            EXTRAS="gimp-help-common gimp-help-en gimp-help-es hunspell-en-us myspell-en-au myspell-en-gb myspell-en-za myspell-es openoffice.org-hyphenation"
+            echo "apt-get install -y --force-yes --no-install-recommends ${package}-${language} $EXTRAS" >> $CHROOT/tmp/install
             echo "apt-get clean" >> $CHROOT/tmp/install
         done
     done
@@ -282,13 +290,13 @@ fi
 
 if [ $fsf = "true" ]
 then
-    FSFEXTRAS="inkscape blender mypaint xournal audacity gimp gimp-ufraw"
-    echo "apt-get install -y --force-yes --install-recommends $FSFEXTRAS" >> $CHROOT/tmp/install
+    FSFEXTRAS="inkscape blender mypaint xournal audacity gimp gimp-ufraw emacs23 emacs-goodies-el emacs23-el"
+    echo "apt-get install -y --force-yes --no-install-recommends $FSFEXTRAS" >> $CHROOT/tmp/install
     echo "aptitude unmarkauto $FSFEXTRAS" >> $CHROOT/tmp/install
     echo "apt-get clean" >> $CHROOT/tmp/install
 fi
 
-echo "apt-get --force-yes -y dist-upgrade" >> $CHROOT/tmp/install
+echo "apt-get --force-yes -y dist-upgrade --no-install-recommends" >> $CHROOT/tmp/install
 echo "apt-get clean" >> $CHROOT/tmp/install
 
 $C sh /tmp/install
@@ -303,7 +311,7 @@ Section "Device"
 EndSection
 EOF
 
-[ $i18n = "true" ] && sed -i 's/500 4000 10000/4500 5000 10000/' $CHROOT/lib/partman/recipes/20trisquel
+[ $i18n = "true" ] && sed -i 's/500 5000 15000/5000 10000 20000/' $CHROOT/lib/partman/recipes/20trisquel
 ##############################################################################
 
 ## Clean packages ##
@@ -318,18 +326,10 @@ export HOST="trisquel"
 export BUILD_SYSTEM="Ubuntu"
 EOF
 
-rm $CHROOT/usr/share/initramfs-tools/scripts/casper-premount/10driver_updates
-
 mkdir -p $CHROOT/etc/skel/.local/share
 
 [ -d master/fsf ] && rm -rf master/fsf
 cp files/artwork/$CODENAME/back.jpg master/isolinux/back.jpg
-
-##############################################################################
-
-## Adduser ##
-sed -i 's/#ADD_EXTRA_GROUPS=1/ADD_EXTRA_GROUPS=1/g' $CHROOT/etc/adduser.conf
-sed -i 's/DIR_MODE=0755/DIR_MODE=0751/g' $CHROOT/etc/adduser.conf
 
 ##############################################################################
 
@@ -346,9 +346,6 @@ done
 rm $CHROOT/usr/sbin/start $CHROOT/usr/sbin/stop
 
 echo "-- CLEANING UP ---------------------------------------------------------------"
-if [ $DIST != "trisquel-sugar" ]; then
-$C apt-get remove -y --force-yes --purge humanity-icon-theme || true
-fi
 
 umount $CHROOT/proc
 umount $CHROOT/dev/pts
@@ -370,7 +367,7 @@ EOF
 $C apt-get update
 $C apt-get clean
 $C apt-get autoclean
-rm $CHROOT/var/lib/apt/lists/*Translation*
+#rm $CHROOT/var/lib/apt/lists/*Translation*
 
 [ -f  $CHROOT/usr/lib/locale/locale-archive ] && rm -v $CHROOT/usr/lib/locale/locale-archive
 
@@ -416,7 +413,10 @@ lzma -9 $DIST-$ARCH/boot/$INITRD
 mv $DIST-$ARCH/boot/${INITRD}.lzma master/casper/initrd
 
 mv -v $DIST-$ARCH/boot/vmlinuz*  master/casper/vmlinuz
+
+fuser -k -9 $DIST-$ARCH
 echo Debootstrap completed succesfully
+
 }
 
 DO_TORRENT(){
@@ -424,7 +424,7 @@ DO_TORRENT(){
 [ $ARCH = "i386" ] &&  ARCH=i686
 
 FILE=${DIST}_${VERSION}_${ARCH}.iso
-[ $i18n = "true" ] && FILE=${DIST}_${VERSION}-i18n_${ARCH}.iso
+#[ $i18n = "true" ] && FILE=${DIST}_${VERSION}-i18n_${ARCH}.iso
 [ $fsf = "true" ] && FILE=${DIST}_${VERSION}-fsf_${ARCH}.iso
 
 [ $DIST != "trisquel" ] && EXTRACOMMENT=", $DIST edition"
@@ -455,15 +455,18 @@ cp files/repo/$ARCH/dists master -a
 #VERSION=$VERSION-$(date +%Y%m%d)
 
 NAME=${DIST}_${VERSION}_$SUBARCH
-[ $i18n = "true" ] && NAME=${DIST}_${VERSION}-i18n_$SUBARCH
+#[ $i18n = "true" ] && NAME=${DIST}_${VERSION}-i18n_$SUBARCH
 [ $fsf = "true" ] &&  NAME=${DIST}_${VERSION}-fsf_$SUBARCH
+#[ $DIST = "trisquel-sugar" ] && DIST="TOAST"
 mkisofs -D -r -V "${DIST} ${VERSION} ${SUBARCH}" -cache-inodes -J -l -b isolinux/isolinux.bin \
    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
    -hide-joliet /pool -hide-joliet /dists -o iso/${NAME}.iso master
 isohybrid iso/${NAME}.iso
-cp master/casper/filesystem.manifest iso/${NAME}.manifest
+cp master/casper/filesystem.manifest iso/${NAME}.iso.manifest
 cd iso
 md5sum ${NAME}.iso > ${NAME}.iso.md5
+rm -f ${NAME}.iso.asc
+gpg --default-key 8D8AEBF1 -ba ${NAME}.iso
 cd ..
 
 # take one down, and pass it around
@@ -483,32 +486,33 @@ df -B 1 $CHROOT |tail -n1|awk '{print $3}' > master/casper/filesystem.size
 
 for i in ubiquity language-pack language-support hunspell myspell libreoffice-hyphenation libreoffice-thesaurus rdate localechooser-data casper user-setup gparted libdebconfclient0 libdebian-installer
 do
-grep $i master/casper/filesystem.manifest >> master/casper/filesystem.manifest-remove
+grep $i master/casper/filesystem.manifest >> master/casper/filesystem.manifest-remove || true
 done
 
 }
 
+ACTION(){
+export COLUMNS=500
 
 case $ACTION in
-debootstrap)	COLUMNS=500 DO_DEBOOTSTRAP 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
+debootstrap)	DO_DEBOOTSTRAP
 		;;
-iso)		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
+iso)		DO_ISO
 		;;
-torrent)	COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
+torrent)	DO_TORRENT
 		;;
-squash)		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
-		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
+squash)		DO_SQUASH
+		DO_ISO
 		;;
-source)		COLUMNS=500 DO_SOURCE 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG
+source)		DO_SOURCE
 		;;
-all)		COLUMNS=500 DO_DEBOOTSTRAP 2>&1 3>&1 0>&1 | COLUMNS=500 tee $LOG || exit 1
-		COLUMNS=500 DO_SQUASH 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-		COLUMNS=500 DO_ISO 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
-		COLUMNS=500 DO_TORRENT 2>&1 3>&1 0>&1 | COLUMNS=500 tee -a $LOG
+all)		DO_DEBOOTSTRAP
+		DO_SQUASH
+		DO_ISO
+		DO_TORRENT
 		DELETE_CHROOT $CHROOT
 		;;
 esac
+}
 
-
-
-
+ACTION 2>&1 3>&1 |tee $LOG

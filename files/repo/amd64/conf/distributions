@@ -1,10 +1,10 @@
-# Toutatis
+# Belenos
 
 Origin: Trisquel
 Label: Trisquel
-Suite: toutatis
-Version: 6.0.1
-Codename: toutatis
+Suite: belenos
+Version: 7.0
+Codename: belenos
 Architectures: amd64
 Components: main
 UDebComponents: main

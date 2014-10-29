@@ -1,5 +1,7 @@
 The efi directory was generated with this commands:
 
+mkdir -p EFI/BOOT/
+
 grub-mkimage -O x86_64-efi -d /usr/lib/grub/x86_64-efi -o EFI/BOOT/BOOTX64.EFI -p "" \
 part_gpt part_msdos ntfs ntfscomp hfsplus fat ext2 normal chain boot configfile linux \
 multiboot iso9660 gfxmenu gfxterm loadenv fat ntfs efi_gop efi_uga \

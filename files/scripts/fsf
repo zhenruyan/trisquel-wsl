@@ -1,4 +1,4 @@
-cp artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
+cp files/artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
 cp files/artwork/$CODENAME/grub-fsf.png $CHROOT/usr/share/backgrounds/trisquel-grub-custom.png
 cp files/artwork/fsf-logo.png $CHROOT/lib/plymouth/themes/trisquel-logo/custom.png
 cp -a files/fsf master/fsf
