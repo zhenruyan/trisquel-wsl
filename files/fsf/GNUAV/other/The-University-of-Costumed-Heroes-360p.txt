@@ -1,0 +1,8 @@
+https://www.fsf.org/blogs/community/the-university-of-costumed-heroes-a-video-from-the-fsf
+
+The University of Costumed Heroes is an animated video telling the
+story of a group of heroes falling prey to the powers of proprietary
+software in education.  The university board acquires cutting-edge
+remote learning software that enables them to continue their
+operations online, but -- [SPOILER ALERT] -- it may sow the seeds of
+their downfall.
