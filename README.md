@@ -17,6 +17,6 @@ Example:
 
 Requirements (running from Trisquel):
 
-    apt-get install xorriso squashfs-tools debootstrap lzma curl syslinux
+    apt-get install xorriso squashfs-tools debootstrap lzma wget syslinux
 
 WARNING: this script uses a ramdisk to build the system, so you need roughly 6GB RAM to run it.
