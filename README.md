@@ -12,8 +12,11 @@ i18n: Builds a DVD with extra translations
 fsf: Builds the FSF membership card image
 
 Example:
+
     bash makeiso.sh  all amd64 trisquel etiona i18n
 
-Requirements: genisoimage, squashfs-tools, debootstrap, lzma, curl, syslinux
+Requirements (running from Trisquel):
+
+    apt-get install xorriso squashfs-tools debootstrap lzma curl syslinux
 
 WARNING: this script uses a ramdisk to build the system, so you need roughly 6GB RAM to run it.
