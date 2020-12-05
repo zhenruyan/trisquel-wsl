@@ -107,4 +107,7 @@ b.tr {top: -1px; right: -1px; background-position: top right;}
 b.bl {bottom: -1px; left: -1px; background-position: bottom left;}
 b.br {bottom: -1px; right: -1px; background-position: bottom right;}
 
-/*  */
+h2,h3{
+margin-bottom:1em;
+margin-top:1em
+}

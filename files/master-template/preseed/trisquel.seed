@@ -348,3 +348,5 @@ ubiquity        ubiquity/keep-installed string trisquel-base
 ## packages and run commands in the target system.
 ##d-i preseed/late_command string apt-install zsh; in-target chsh -s /bin/zsh
 #
+# Enable disk encryption by default:
+#d-i partman-auto/method string crypto

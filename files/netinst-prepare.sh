@@ -23,24 +23,29 @@ cd files || true
 
 DATE=$(date +%Y%m%d)
 VERSION=$1
+RELEASE=$(echo $1 |sed 's/.*+//;s/trisquel.*//')
 
-for ARCH in i386 amd64 ;do
+if [ $# -ne 1 ]; then
+  echo Usage: $0 netinst-version
+  exit 1
+fi
 
-    #initrd
-    tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/netboot/ubuntu-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
-    gunzip -f initrd.netinst.$ARCH.gz
-    lzma -9 initrd.netinst.$ARCH
-    mv initrd.netinst.$ARCH.lzma initrd.netinst.$ARCH
+for ARCH in i386 amd64
+do
 
-    #vmlinuz
-    tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/cdrom/vmlinuz" -O > vmlinuz.netinst.$ARCH
+tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/netboot/ubuntu-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
 
-    #netinst iso
-    tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/netboot/mini.iso" -O > ../iso/trisquel-netinst_8.0-${DATE}_$ARCH.iso
-    if [ $ARCH = i386 ] ; then
-       mv ../iso/trisquel-netinst_8.0-${DATE}_$ARCH.iso ../iso/trisquel-netinst_8.0-${DATE}_i686.iso
-       ARCH=i686
-    fi
-    md5sum ../iso/trisquel-netinst_8.0-${DATE}_$ARCH.iso > ../iso/trisquel-netinst_8.0-${DATE}_$ARCH.iso.md5
+gunzip -f initrd.netinst.$ARCH.gz
+lzma -9 initrd.netinst.$ARCH
+mv initrd.netinst.$ARCH.lzma initrd.netinst.$ARCH
+
+tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/cdrom/vmlinuz" -O > vmlinuz.netinst.$ARCH
+
+tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/netboot/mini.iso" -O > ../iso/trisquel-netinst_$RELEASE-${DATE}_$ARCH.iso
+
+if [ $ARCH = i386 ] ; then
+ mv ../iso/trisquel-netinst_$RELEASE-${DATE}_$ARCH.iso ../iso/trisquel-netinst_$RELEASE-${DATE}_i686.iso
+ ARCH=i686
+fi
 
 done  

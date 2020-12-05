@@ -1,0 +1,7 @@
+Archive: etiona
+Version: 9.0
+Component: main
+Origin: Trisquel
+Label: Trisquel
+Architecture: i386
+Description: Trisquel GNU/Linux packages

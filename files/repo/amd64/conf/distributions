@@ -1,15 +1,19 @@
-# Belenos
+# etiona
 
 Origin: Trisquel
 Label: Trisquel
-Suite: belenos
-Version: 7.0
-Codename: belenos
-Architectures: amd64
+Suite: etiona
+Version: 9.0
+Codename: etiona
+Architectures: i386 amd64 
 Components: main
-UDebComponents: main
+#DDebComponents: main
+#DDebIndices: Packages . .gz .bz2
+DebIndices: Packages Release . .gz .bz2
+DscIndices: Sources Release .gz .bz2
 Contents:
-Log: toutatis.log
+Log: etiona.log
 Description: Trisquel GNU/Linux packages
-SignWith: B4EFB9F38D8AEBF1
+Update: bionic etiona-packages #etiona-devel etiona-security
+SignWith: 0C05112F
 
