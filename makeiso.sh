@@ -32,7 +32,7 @@ http://mirrors.ustc.edu.cn/trisquel-images/
 http://ftp.caliu.cat/pub/distribucions/trisquel/iso/
 http://ftp.acc.umu.se/mirror/trisquel/iso/
 http://mirrors.ocf.berkeley.edu/trisquel-images/"
-export MIRROR="http://archive.trisquel.org/trisquel/" # The upsream full repository
+export MIRROR="https://archive.trisquel.org/trisquel/" # The upsream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
 
 usage(){
@@ -43,9 +43,9 @@ License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
-This script builds a Trisquel CD image from scratch. The \"files\" directory is required.
+This script builds a Trisquel CD image from scratch.
 
-The script needs 5 parameters (in the shown oeder):
+The script needs 5 parameters (in the shown order):
 
 * Action to do: debootstrap|iso|source|squash|torrent|all
 * Architecture to build: i386|amd64
@@ -57,7 +57,7 @@ i18n: Builds a DVD with extra translations
 fsf: Builds the FSF membership card image
 
 Usage: $0 debootstrap|iso|squash|source|torrent|all i386|amd64 trisquel|trisquel-mini|trisquel-sugar|triskel codename [i18n] [fsf]
-Requirements: genisoimage, squashfs-tools, debootstrap, lzma, curl, syslinux
+Requirements: xorriso, squashfs-tools, debootstrap, lzma, wget, syslinux
 
 WARNING: this version of $0 uses a ramdisk to build the system, so you need roughly 6GB RAM to run it."
 }
@@ -87,7 +87,7 @@ trisquel|trisquel-mini|trisquel-sugar|triskel)	export DIST=$3
 esac
 
 export CODENAME=$4
-export VERSION=$(wget -q -O - http://archive.trisquel.info/trisquel/dists/$CODENAME/Release|grep ^Version:|cut -d" " -f2)
+export VERSION=$(wget -q -O - https://archive.trisquel.info/trisquel/dists/$CODENAME/Release|grep ^Version:|cut -d" " -f2)
 [ $CODENAME = etiona ] && UPSTREAM=bionic
 [ $CODENAME = flidas ] && UPSTREAM=xenial
 [ $CODENAME = belenos ] && UPSTREAM=trusty
@@ -200,7 +200,7 @@ rm -rf master
 cp -a files/master-template master
 sed -i 's/FOREGROUND/84B0FF/g' master/isolinux/stdmenu.cfg master/isolinux/gfxboot.cfg
 echo "Trisquel $VERSION \"$CODENAME\" - Release $ARCH ($(date +%Y%m%d))" | sed s/i386/i686/g > master/.disk/info
-echo http://trisquel.info/wiki/$CODENAME > master/.disk/release_notes_url
+echo https://trisquel.info/wiki/$CODENAME > master/.disk/release_notes_url
 touch master/.disk/base_installable
 echo 'full_cd/single' > master/.disk/cd_type
 
@@ -219,18 +219,20 @@ debootstrap --arch=$ARCH $CODENAME $CHROOT $MIRROR
 echo exit 101 > $CHROOT/usr/sbin/policy-rc.d
 chmod +x $CHROOT/usr/sbin/policy-rc.d
 
-cp /home/pub/repos/trisquel/key.asc $CHROOT/tmp/
-$C apt-key add /tmp/key.asc
+# Development build key
+#wget https://builds.trisquel.org/repos/signkey.asc -O $CHROOT/tmp/key.asc
+#$C apt-key add /tmp/key.asc
+#rm $CHROOT/tmp/key.asc
 
 # apt setup for the debootstrap second stage
 cat << EOF > $CHROOT/etc/apt/sources.list
 deb $MIRROR $CODENAME main
 deb $MIRROR $CODENAME-updates main
 deb $MIRROR $CODENAME-security main
-#deb http://jenkins.trisquel.info/repos/trisquel/etiona/ etiona main
-#deb http://jenkins.trisquel.info/repos/trisquel/etiona/ etiona-security main
-#deb http://jenkins.trisquel.info/repos/trisquel/etiona/ etiona-backports main
-#deb http://jenkins.trisquel.info/repos/packages/etiona/production/ etiona main
+#deb https://builds.trisquel.org/repos/etiona/ etiona main
+#deb https://builds.trisquel.org/repos/etiona/ etiona-security main
+#deb https://builds.trisquel.org/repos/etiona/ etiona-updates main
+#deb https://builds.trisquel.org/repos/etiona/ etiona-backports main
 EOF
 
 $C apt-get update
