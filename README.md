@@ -13,7 +13,7 @@ fsf: Builds the FSF membership card image
 
 Example:
 
-    bash makeiso.sh  all amd64 trisquel etiona i18n
+    sudo bash makeiso.sh  all amd64 trisquel etiona i18n
 
 Requirements (running from Trisquel):
 
