@@ -32,7 +32,7 @@ http://mirrors.ustc.edu.cn/trisquel-images/
 http://ftp.caliu.cat/pub/distribucions/trisquel/iso/
 http://ftp.acc.umu.se/mirror/trisquel/iso/
 http://mirrors.ocf.berkeley.edu/trisquel-images/"
-export MIRROR="http://devel.trisquel.info/archive/trisquel/" # The upsream full repository
+export MIRROR="http://archive.trisquel.org/trisquel/" # The upsream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
 
 usage(){
@@ -205,7 +205,6 @@ touch master/.disk/base_installable
 echo 'full_cd/single' > master/.disk/cd_type
 
 TXTCFG=files/$DIST.cfg
-[ $i18n = "true" ] && TXTCFG=files/$DIST-i18n.cfg
 [ $ARCH = "i386" ] && [ $DIST = "trisquel" ] && TXTCFG=files/trisquel-nonetinst.cfg
 cp $TXTCFG master/isolinux/txt.cfg
 
