@@ -1,15 +1,13 @@
-# Toutatis
-
 Origin: Trisquel
 Label: Trisquel
-Suite: toutatis
-Version: 6.0.1
-Codename: toutatis
+Suite: flidas
+Version: 8.0
+Codename: flidas
 Architectures: i386
 Components: main
 UDebComponents: main
 Contents:
-Log: toutatis.log
+Log: flidas.log
 Description: Trisquel GNU/Linux packages
-SignWith: B4EFB9F38D8AEBF1
+SignWith: 9D9D4FAD
 

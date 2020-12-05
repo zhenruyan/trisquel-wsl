@@ -1,0 +1,136 @@
+Package: efibootmgr
+Version: 0.5.4-7ubuntu1.2
+Architecture: amd64
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Installed-Size: 101
+Depends: libc6 (>= 2.14), libpci3 (>= 1:3.2.1-1)
+Priority: optional
+Section: admin
+Filename: pool/main/e/efibootmgr/efibootmgr_0.5.4-7ubuntu1.2_amd64.deb
+Size: 28414
+SHA256: cd3c1142d83ddde7bb31fe1d7bc7eafdae6bce76a5704f3c2e139f97ebe88d97
+SHA1: 8a2fcbdd04b92027cd1db64958083e04dc56c259
+MD5sum: 2414ac30717008751370e521d12dfe27
+Description: Interact with the EFI Boot Manager
+ This is a Linux user-space application to modify the Intel Extensible
+ Firmware Interface (EFI) Boot Manager configuration.  This application can
+ create and destroy boot entries, change the boot order, change the next
+ running boot option, and more.
+ .
+ Details on the EFI Boot Manager are available from the EFI Specification,
+ v1.02 or above, available from http://developer.intel.com.
+ .
+ Note: efibootmgr requires that the kernel module efivars be loaded prior
+ to use.  'modprobe efivars' should do the trick.
+Original-Maintainer: Steve McIntyre <93sam@debian.org>
+
+Package: grub-efi
+Source: grub2
+Version: 2.02~beta2-36ubuntu3.6+8.0trisquel1
+Architecture: amd64
+Maintainer: Trisquel Developers <trisquel-devel-discuss@lists.trisquel.com>
+Installed-Size: 16
+Pre-Depends: dpkg (>= 1.17.13)
+Depends: grub-common (= 2.02~beta2-36ubuntu3.6+8.0trisquel1), grub-efi-amd64 (= 2.02~beta2-36ubuntu3.6+8.0trisquel1)
+Multi-Arch: foreign
+Homepage: http://www.gnu.org/software/grub/
+Priority: extra
+Section: oldlibs
+Filename: pool/main/g/grub2/grub-efi_2.02~beta2-36ubuntu3.6+8.0trisquel1_amd64.deb
+Size: 2552
+SHA256: 9f3b6e608f6946bee15aac8b84fddf6c6172bc40c5cdce8052497c17bb91d132
+SHA1: bb16de9f39da00f21a55492cd8b5362202c5cb89
+MD5sum: 1a4097ba024048ce8b894b0008519744
+Description: GRand Unified Bootloader, version 2 (dummy package)
+ This is a dummy transitional package that depends on either grub-efi-ia32 or
+ grub-efi-amd64, depending on the architecture.
+Original-Maintainer: GRUB Maintainers <pkg-grub-devel@lists.alioth.debian.org>
+
+Package: grub-efi-amd64
+Source: grub2
+Version: 2.02~beta2-36ubuntu3.6+8.0trisquel1
+Architecture: amd64
+Maintainer: Trisquel Developers <trisquel-devel-discuss@lists.trisquel.com>
+Installed-Size: 186
+Pre-Depends: dpkg (>= 1.17.13)
+Depends: debconf (>= 0.5) | debconf-2.0, grub-common (= 2.02~beta2-36ubuntu3.6+8.0trisquel1), grub2-common (= 2.02~beta2-36ubuntu3.6+8.0trisquel1), grub-efi-amd64-bin (= 2.02~beta2-36ubuntu3.6+8.0trisquel1), ucf
+Conflicts: elilo, grub, grub-coreboot, grub-efi-ia32, grub-ieee1275, grub-legacy, grub-pc, grub-xen
+Replaces: grub, grub-common (<= 1.97~beta2-1), grub-coreboot, grub-efi-ia32, grub-ieee1275, grub-legacy, grub-pc, grub2 (<< 2.02~beta2-36ubuntu3.6+8.0trisquel1)
+Multi-Arch: foreign
+Homepage: http://www.gnu.org/software/grub/
+Priority: extra
+Section: admin
+Filename: pool/main/g/grub2/grub-efi-amd64_2.02~beta2-36ubuntu3.6+8.0trisquel1_amd64.deb
+Size: 65684
+SHA256: 49f474a05e0dfda4c6b0dbd84e20b8bd6aac8eaa8bc44e30a2248e30c5954ca8
+SHA1: da89eb6bdbe3b9a0f0f2ecb7d2911457402adee2
+MD5sum: e60741c57dd3cc90de2e2aa3b41454d5
+Description: GRand Unified Bootloader, version 2 (EFI-AMD64 version)
+ GRUB is a portable, powerful bootloader.  This version of GRUB is based on a
+ cleaner design than its predecessors, and provides the following new features:
+ .
+  - Scripting in grub.cfg using BASH-like syntax.
+  - Support for modern partition maps such as GPT.
+  - Modular generation of grub.cfg via update-grub.  Packages providing GRUB
+    add-ons can plug in their own script rules and trigger updates by invoking
+    update-grub.
+ .
+ This package contains a version of GRUB that has been built for use with
+ EFI-AMD64 architecture, such as the one provided by Intel Macs (that is, unless
+ a BIOS interface has been activated).
+Original-Maintainer: GRUB Maintainers <pkg-grub-devel@lists.alioth.debian.org>
+
+Package: grub-efi-amd64-bin
+Source: grub2
+Version: 2.02~beta2-36ubuntu3.6+8.0trisquel1
+Architecture: amd64
+Maintainer: Trisquel Developers <trisquel-devel-discuss@lists.trisquel.com>
+Installed-Size: 2774
+Depends: grub-common (= 2.02~beta2-36ubuntu3.6+8.0trisquel1), efibootmgr
+Replaces: grub-common (<= 1.97~beta2-1), grub-efi-amd64 (<< 1.99-1), grub2 (<< 2.02~beta2-36ubuntu3.6+8.0trisquel1)
+Multi-Arch: foreign
+Homepage: http://www.gnu.org/software/grub/
+Priority: extra
+Section: admin
+Filename: pool/main/g/grub2/grub-efi-amd64-bin_2.02~beta2-36ubuntu3.6+8.0trisquel1_amd64.deb
+Size: 658830
+SHA256: 9fb26b55720f972eaafb82a14c0e4e2eab366db7ea9324ef8095607ee271a2f8
+SHA1: e8bdd0b168d9ad8e7fbd3626d6a6fbb8f6063a78
+MD5sum: 96f8a3ae1cee15a017df0a9277125a91
+Description: GRand Unified Bootloader, version 2 (EFI-AMD64 binaries)
+ GRUB is a portable, powerful bootloader.  This version of GRUB is based on a
+ cleaner design than its predecessors, and provides the following new features:
+ .
+  - Scripting in grub.cfg using BASH-like syntax.
+  - Support for modern partition maps such as GPT.
+  - Modular generation of grub.cfg via update-grub.  Packages providing GRUB
+    add-ons can plug in their own script rules and trigger updates by invoking
+    update-grub.
+ .
+ This package contains a version of GRUB that has been built for use with
+ EFI-AMD64 architecture, such as the one provided by Intel Macs (that is, unless
+ a BIOS interface has been activated).  It will not automatically install
+ GRUB as the active boot loader, nor will it automatically update grub.cfg
+ on upgrade, so most people should install grub-efi-amd64 instead.
+Original-Maintainer: GRUB Maintainers <pkg-grub-devel@lists.alioth.debian.org>
+
+Package: shim
+Version: 0.8-0ubuntu2
+Architecture: amd64
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Installed-Size: 2590
+Priority: optional
+Section: admin
+Filename: pool/main/s/shim/shim_0.8-0ubuntu2_amd64.deb
+Size: 442978
+SHA256: e88da9c15f1920eac2d1ae9ed440d7036e9acdd660f88d4df2063b36d6bf38c3
+SHA1: 0414de26585c0d8391afba52cfe19df67d2f14d1
+MD5sum: 1915dc237a738b6f5c1f3adfe997809d
+Description: boot loader to chain-load signed boot loaders under Secure Boot
+ This package provides a minimalist boot loader which allows verifying
+ signatures of other UEFI binaries against either the Secure Boot DB/DBX or
+ against a built-in signature database.  Its purpose is to allow a small,
+ infrequently-changing binary to be signed by the UEFI CA, while allowing
+ an OS distributor to revision their main bootloader independently of the CA.
+Original-Maintainer: Steve Langasek <vorlon@debian.org>
+

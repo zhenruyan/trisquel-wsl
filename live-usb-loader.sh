@@ -19,8 +19,8 @@
 
 usage(){
 echo You need to run this script as root
-echo Usage: sudo $0 distro.iso /dev/sdX
-echo Example: sudo $0 foobar_5.0_i386.iso /dev/sdb
+echo Usage: sudo $0 distro.iso sources.iso /dev/sdX 
+echo Example: sudo $0 foobar_5.0_i386.iso foobar_5.0_src.iso /dev/sdb
 echo
 echo WARNING!: this script will delete all data on the whole disk you pass as the second parameter. Make sure it is your USB drive and not your internal hard drive!
 echo ANOTHER WARNING!: This script can bite your dog. Use it with care, backup your data.
@@ -28,15 +28,15 @@ exit 1
 }
 
 [ $(id -u) != 0 ] && usage
-[ $# != 2 ] && usage
+[ $# != 3 ] && usage
 
 ISO=$1
-DEV=$2
-PERSISTENCESIZE=500 # Sice of the persistence file, in MB
+SRC=$2
+DEV=$3
 
 ISOTMP=$(mktemp -d)
+SRCTMP=$(mktemp -d)
 DEVTMP=$(mktemp -d)
-
 
 umount $DEV*
 mount -o loop $ISO $ISOTMP
@@ -45,14 +45,18 @@ sync
 #mount -o sync $DEV $DEVTMP
 mount $DEV $DEVTMP
 cp -vr $ISOTMP/* $ISOTMP/.disk $DEVTMP
+umount $ISOTMP
 sync
 
-dd if=/dev/zero of=$DEVTMP/casper-rw bs=1M count=$PERSISTENCESIZE
-mkfs.ext3 -F $DEVTMP/casper-rw 
-sync
-
-mv $DEVTMP/isolinux $DEVTMP/syslinux
+cp -r $DEVTMP/isolinux $DEVTMP/syslinux
 mv $DEVTMP/syslinux/isolinux.cfg $DEVTMP/syslinux/syslinux.cfg
+# Disable gfxboot, breaks on SeaBios in some cases
+sed '/gfxboot/d' -i $DEVTMP/syslinux/syslinux.cfg
+
+mkdir $DEVTMP/source_code
+mount $SRC $SRCTMP/
+cp -r $SRCTMP/* $DEVTMP/source_code/
+umount $SRCTMP
 
 sync
 umount $DEVTMP

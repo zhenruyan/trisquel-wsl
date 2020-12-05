@@ -1,0 +1,33 @@
+Origin: Trisquel
+Label: Trisquel
+Suite: flidas
+Codename: flidas
+Version: 8.0
+Date: Sat, 07 Jan 2017 23:54:46 UTC
+Architectures: amd64
+Components: main
+Description: Trisquel GNU/Linux packages
+MD5Sum:
+ 96250dd0e7805faba532f33ecc654c79 6539 main/binary-amd64/Packages
+ 7d65353d8b4da3f4d8f6f5be4d5097ff 2258 main/binary-amd64/Packages.gz
+ b05499aa300bd9d907581d65facb267a 139 main/binary-amd64/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/debian-installer/binary-amd64/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/debian-installer/binary-amd64/Packages.gz
+ 62581bd24cb32a3c3a6a1d346294af42 18310 main/Contents-amd64
+ d85a8c39655ec414b90096927ca8d73d 1656 main/Contents-amd64.gz
+SHA1:
+ 4f7c9663dfff3c001006793b040ed49e135dde95 6539 main/binary-amd64/Packages
+ 6c3d11120faa64b3f9fc1709cb1b761fb4af0263 2258 main/binary-amd64/Packages.gz
+ ce44d2a4699e6978dcdcecfb1cec8445cfa49e38 139 main/binary-amd64/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/debian-installer/binary-amd64/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/debian-installer/binary-amd64/Packages.gz
+ b959763e12ad3073786dd5b4dc0080bbff12b979 18310 main/Contents-amd64
+ 83fa4f72d9d9996d8654d4cb5323565a586d3820 1656 main/Contents-amd64.gz
+SHA256:
+ 9132950b5192490086945f5818d958f33dff9d51507b0fdf42eaf4b4b46a50e2 6539 main/binary-amd64/Packages
+ 09ce023be3074785d2c4159ebd823c7788fc3e008a8b8d019fc2c54c97d2f264 2258 main/binary-amd64/Packages.gz
+ b9536d80857cc09d6c05213e0e4a1e488cd37a9d11f13917d4da2e91ce6bd56a 139 main/binary-amd64/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/debian-installer/binary-amd64/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/debian-installer/binary-amd64/Packages.gz
+ c6848315defff230730ee1d42138690f3c0986f6b1c24f979138ab1b2ccccc99 18310 main/Contents-amd64
+ 8dd9b458b3a6695825ea90385d321c832d2cf97b8c0c6cd5f46a36da7b10d8ba 1656 main/Contents-amd64.gz

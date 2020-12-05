@@ -1,12 +1,9 @@
-The efi directory was generated with this commands:
+#The efi directory was generated with this commands:
 
-mkdir -p EFI/BOOT/
 
-grub-mkimage -O x86_64-efi -d /usr/lib/grub/x86_64-efi -o EFI/BOOT/BOOTX64.EFI -p "" \
-part_gpt part_msdos ntfs ntfscomp hfsplus fat ext2 normal chain boot configfile linux \
-multiboot iso9660 gfxmenu gfxterm loadenv fat ntfs efi_gop efi_uga \
-ext2 ntfscomp iso9660 loopback search linux boot minicmd cat cpuid chain \
-halt help ls reboot echo test configfile normal sleep memdisk tar font \
-gfxterm gettext true  video_bochs video_cirrus multiboot multiboot2 --config="EFI/BOOT/grub.cfg"
+grub2-mkfont -s 14 -o /EFI/BOOT/font.pf2 /usr/share/fonts/dejavu/DejaVuSansMono.ttf
 
-grub2-mkfont -s 14 -o font.pf2 /usr/share/fonts/dejavu/DejaVuSansMono.ttf
+grub-mkimage -O x86_64-efi -d /usr/lib/grub/x86_64-efi -o EFI/BOOT/BOOTX64.EFI -p "" part_gpt part_msdos fat normal boot configfile linux iso9660 gfxmenu gfxterm efi_gop efi_uga search test
+
+
+

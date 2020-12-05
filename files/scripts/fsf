@@ -1,18 +1,3 @@
 cp files/artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
 cp files/artwork/$CODENAME/grub-fsf.png $CHROOT/usr/share/backgrounds/trisquel-grub-custom.png
-cp files/artwork/fsf-logo.png $CHROOT/lib/plymouth/themes/trisquel-logo/custom.png
-cp -a files/fsf master/fsf
-
-cat << EOF > $CHROOT/etc/xdg/autostart/fsfmembercard.desktop
-#!/usr/bin/env xdg-open
-
-[Desktop Entry]
-Encoding=UTF-8
-Version=1.0
-Type=Application
-Terminal=false
-Exec=bash -c "[ -f /cdrom/fsf/index.html ] && x-www-browser /cdrom/fsf/index.html"
-Name=fsfmembercard
-Comment=fsfmembercard
-Icon=www
-EOF
+cp files/artwork/fsf-logo.png $CHROOT/usr/share/plymouth/themes/trisquel-logo/custom.png
