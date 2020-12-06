@@ -198,6 +198,7 @@ CHROOT=$CHROOT
 
 rm -rf master
 cp -a files/master-template master
+mkdir master/casper
 sed -i 's/FOREGROUND/84B0FF/g' master/isolinux/stdmenu.cfg master/isolinux/gfxboot.cfg
 echo "Trisquel $VERSION \"$CODENAME\" - Release $ARCH ($(date +%Y%m%d))" | sed s/i386/i686/g > master/.disk/info
 echo https://trisquel.info/wiki/$CODENAME > master/.disk/release_notes_url
@@ -280,6 +281,7 @@ TOINSTALL=""
 LANGSUPPORT="en es pt fr sv de it uk zh-hans ru pl nl ja zh-hant gl ca da hu cs nb fi et el sr sl sk ro bg eu ko nn lt vi pa lv ar he th ga id hi ta eo ast tr oc nds sq km hr tl"
 EXTRAPACKAGES="language-pack language-pack-gnome libreoffice-help libreoffice-l10n abrowser-locale gimp-help hunspell icedove-locale"
 [ $fsf = "true" ] && EXTRAPACKAGES="abrowser-locale hunspell language-pack language-pack-gnome libreoffice-l10n icedove-locale"
+[ $DIST = "trisquel-sugar" ] && EXTRAPACKAGES="language-pack"
 
 if [ $DIST = "triskel" ]; then
   echo "apt-get install -y --force-yes ubiquity ubiquity-slideshow-trisquel ubiquity-frontend-kde" >> $CHROOT/tmp/install
