@@ -62,7 +62,7 @@ ubiquity        ubiquity/keep-installed string trisquel-base
 ## If you select ftp, the mirror/country string does not need to be set.
 ##d-i mirror/protocol string ftp
 #d-i mirror/country string manual
-#d-i mirror/http/hostname string archive.trisquel.info
+#d-i mirror/http/hostname string archive.trisquel.org
 #d-i mirror/http/directory string /trisquel
 #d-i mirror/http/proxy string
 #
@@ -200,7 +200,7 @@ ubiquity        ubiquity/keep-installed string trisquel-base
 ## Select which update services to use; define the mirrors to be used.
 ## Values shown below are the normal defaults.
 ##d-i apt-setup/services-select multiselect security
-##d-i apt-setup/security_host string archive.trisquel.info
+##d-i apt-setup/security_host string archive.trisquel.org
 ##d-i apt-setup/security_path string /trisquel
 #
 ## Additional repositories, local[0-9] available

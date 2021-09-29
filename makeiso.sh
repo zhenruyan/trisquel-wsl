@@ -24,16 +24,22 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-export TRACKER=http://trisquel.info:6969/announce
-export MIRRORS="http://cdimage.trisquel.info/trisquel-images/
+# True if $1 is greater than $2
+version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
+
+export TRACKER=http://trisquel.org:6969/announce
+export MIRRORS="http://cdimage.trisquel.org/trisquel-images/
 http://mirror.fsf.org/trisquel-images/
 http://mirror.cedia.org.ec/trisquel.iso/
 http://mirrors.ustc.edu.cn/trisquel-images/
 http://ftp.caliu.cat/pub/distribucions/trisquel/iso/
 http://ftp.acc.umu.se/mirror/trisquel/iso/
 http://mirrors.ocf.berkeley.edu/trisquel-images/"
-export MIRROR="https://archive.trisquel.org/trisquel/" # The upsream full repository
+export MIRROR="http://archive.trisquel.org/trisquel/" # The upstream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
+#Add proxy support only if proxy variable is specified.
+#Example: PROXY_FULL_ADDRESS="user:password@proxy.example.com:3128"
+export PROXY_FULL_ADDRESS=""
 
 usage(){
 echo "Trisquel iso build script
@@ -87,9 +93,10 @@ trisquel|trisquel-mini|trisquel-sugar|triskel)	export DIST=$3
 esac
 
 export CODENAME=$4
-export VERSION=$(wget -q -O - https://archive.trisquel.info/trisquel/dists/$CODENAME/Release|grep ^Version:|cut -d" " -f2)
-[ $CODENAME = etiona ] && UPSTREAM=bionic
-[ $CODENAME = flidas ] && UPSTREAM=xenial
+export VERSION=$(wget -q -O - https://archive.trisquel.org/trisquel/dists/$CODENAME/Release|grep ^Version:|cut -d" " -f2)
+[ $CODENAME = nabia ] && UPSTREAM=focal && REL=10.0
+[ $CODENAME = etiona ] && UPSTREAM=bionic && REL=9.0
+[ $CODENAME = flidas ] && UPSTREAM=xenial && REL=8.0
 [ $CODENAME = belenos ] && UPSTREAM=trusty
 [ $CODENAME = taranis ] && UPSTREAM=lucid
 [ $CODENAME = slaine ] && UPSTREAM=maverick
@@ -112,6 +119,7 @@ export CHROOT=$PWD/$DIST-$ARCH
 export C="chroot $CHROOT"
 export LOG=logs/$DIST-$ARCH.log
 export LANG=C
+export LC_ALL=C
 export LANGUAGE=C
 
 [ -d logs ] || mkdir logs
@@ -138,7 +146,7 @@ MANIFESTS=../iso/*manifest
 $fsf && MANIFESTS=../iso/*fsf*manifest
 $fsf && VERSION=${VERSION}fsf
 
-for i in $(cut -d" " -f1 $MANIFESTS |sort -u) 
+for i in $(cut -d" " -f1 $MANIFESTS |sort -u)
 do
 i=$(echo $i| sed 's/:.*//')
     echo Package: $i
@@ -147,7 +155,8 @@ i=$(echo $i| sed 's/:.*//')
 done
 
 # Some shy packages may need to be asked directly
-apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux python-extras efibootmgr shim grub2 plymouth 
+apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux \
+                  python-extras efibootmgr shim grub2 plymouth
 
 for file in $(find . -type f|sed 's_./__'); do
  letter=${file:0:1}
@@ -178,7 +187,7 @@ then
     echo "Umounting and removing $1"
     fuser -k $1 || true
     for MOUNT in $1/proc $1/sys $1/dev/pts $1/tmp $1
-    do 
+    do
         umount $MOUNT || true
     done
 rm -rf $1
@@ -225,15 +234,18 @@ chmod +x $CHROOT/usr/sbin/policy-rc.d
 #$C apt-key add /tmp/key.asc
 #rm $CHROOT/tmp/key.asc
 
+#use proxy only if proxy variable is set
+[ -n "$PROXY_FULL_ADDRESS" ] && \
+echo "Acquire::http::Proxy \"http://$PROXY_FULL_ADDRESS/\";" > $CHROOT/etc/apt/apt.conf.d/proxy.conf
 # apt setup for the debootstrap second stage
 cat << EOF > $CHROOT/etc/apt/sources.list
 deb $MIRROR $CODENAME main
 deb $MIRROR $CODENAME-updates main
 deb $MIRROR $CODENAME-security main
-#deb https://builds.trisquel.org/repos/etiona/ etiona main
-#deb https://builds.trisquel.org/repos/etiona/ etiona-security main
-#deb https://builds.trisquel.org/repos/etiona/ etiona-updates main
-#deb https://builds.trisquel.org/repos/etiona/ etiona-backports main
+#deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME main
+#deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME-security main
+#deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME-updates main
+#deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME-backports main
 EOF
 
 $C apt-get update
@@ -250,27 +262,29 @@ KERNEL=linux-generic
 # package install
 echo "KERNEL=$KERNEL" > $CHROOT/tmp/install
 echo "DIST=$DIST" >> $CHROOT/tmp/install
+echo "REL=$REL" >> $CHROOT/tmp/install
 echo 'LANG=C
 apt-get update
-apt-get install -y --force-yes --no-install-recommends $KERNEL trisquel-minimal trisquel-base
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $KERNEL trisquel-minimal trisquel-base
 apt-get clean
-apt-get install -y --force-yes --no-install-recommends $DIST
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | sed s/.*:.//)
 apt-get clean
-apt-get install -y --force-yes --no-install-recommends ${DIST}-recommended
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends ${DIST}-recommended
 aptitude unmarkauto $(apt-cache depends $DIST-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
-apt-get install -y --force-yes --no-install-recommends trisquel-base-recommended
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends trisquel-base-recommended
 aptitude unmarkauto $(apt-cache depends trisquel-base-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
 [ $DIST != trisquel-sugar ] && \
-apt-get install -y --force-yes --no-install-recommends trisquel-desktop-common-recommended
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends trisquel-desktop-common-recommended
 aptitude unmarkauto $(apt-cache depends trisquel-desktop-common-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
-apt-get install -y --force-yes --no-install-recommends $(apt-cache show $DIST | grep ^Suggests|sed s/Suggests://|sed s/\,//g|head -n1)
-
-apt-get install -y --force-yes --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all vdpau-va-driver  casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
-
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $(apt-cache show $DIST | grep ^Suggests|sed s/Suggests://|sed s/\,//g|head -n1)
+[ $REL = 9.0 ] && \
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all vdpau-va-driver  casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
+[ $REL = 10.0 ] && \
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
 
 
 apt-get clean
@@ -284,12 +298,12 @@ EXTRAPACKAGES="language-pack language-pack-gnome libreoffice-help libreoffice-l1
 [ $DIST = "trisquel-sugar" ] && EXTRAPACKAGES="language-pack"
 
 if [ $DIST = "triskel" ]; then
-  echo "apt-get install -y --force-yes ubiquity ubiquity-slideshow-trisquel ubiquity-frontend-kde" >> $CHROOT/tmp/install
+  echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages gconf2 ubiquity ubiquity-slideshow-trisquel ubiquity-frontend-kde" >> $CHROOT/tmp/install
 else
-  echo "apt-get install -y --force-yes ubiquity ubiquity-slideshow-trisquel ubiquity-frontend-gtk" >> $CHROOT/tmp/install
+  echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages gconf2 ubiquity ubiquity-slideshow-trisquel ubiquity-frontend-gtk" >> $CHROOT/tmp/install
 fi
 
-if [ $i18n = "true" ] 
+if [ $i18n = "true" ]
 then
     echo "Making an i18n image"
     for language in $LANGSUPPORT
@@ -300,38 +314,43 @@ then
           grep -q "^Package: ${package}-${language}$" $CHROOT/var/lib/apt/lists/*Packages && TOINSTALL+=" ${package}-${language} "
         done
     done
-    echo "apt-get install -y --force-yes --no-install-recommends $TOINSTALL" >> $CHROOT/tmp/install
+    echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $TOINSTALL" >> $CHROOT/tmp/install
     echo "apt-get clean" >> $CHROOT/tmp/install
     echo $LANGSUPPORT | sed 's/ /\n/g; s/zh-hans/zh_CN/g; s/zh-hant/zh_TW/g; s/pt/pt_PT/g;' |sort -u > master/isolinux/langlist
 else
     echo -e "en\nes" > master/isolinux/langlist
 fi
 
-[ $DIST = "trisquel" ] && echo "apt-get install -y --force-yes libreoffice-l10n-en-za libreoffice-l10n-en-gb libreoffice-help-en-gb mythes-en-au hunspell-en-za hyphen-en-gb hunspell-en-ca hunspell-en-au hunspell-en-gb gimp-help-common gimp-help-en gimp-help-es hunspell-en-us hunspell-en-gb hunspell-en-za myspell-es openoffice.org-hyphenation icedove-locale-es-es" >> $CHROOT/tmp/install
-[ $DIST = "triskel" ] && echo "apt-get install -y --force-yes sddm" >> $CHROOT/tmp/install
-[ $fsf = "true" ] && echo "apt-get install -y --force-yes abrowser" >> $CHROOT/tmp/install
+[ $DIST = "trisquel" ] && echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages libreoffice-l10n-en-za libreoffice-l10n-en-gb libreoffice-help-en-gb mythes-en-au hunspell-en-za hyphen-en-gb hunspell-en-ca hunspell-en-au hunspell-en-gb gimp-help-common gimp-help-en gimp-help-es hunspell-en-us hunspell-en-gb hunspell-en-za myspell-es openoffice.org-hyphenation icedove-locale-es-es" >> $CHROOT/tmp/install
+[ $DIST = "triskel" ] && echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages sddm" >> $CHROOT/tmp/install
+[ $fsf = "true" ] && echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages abrowser" >> $CHROOT/tmp/install
 
-echo "apt-get --force-yes -y dist-upgrade --no-install-recommends" >> $CHROOT/tmp/install
+echo "apt-get --allow-downgrades --allow-remove-essential --allow-change-held-packages -y dist-upgrade --no-install-recommends" >> $CHROOT/tmp/install
 echo "apt-get clean" >> $CHROOT/tmp/install
 echo "touch /tmp/finished" >> $CHROOT/tmp/install
 
+#Note that using -e will make any package configuration failing exit without any notice.
 $C bash -x -e /tmp/install
 rm $CHROOT/tmp/finished
 
+#use proxy only if proxy variable is set
+[ -n "$PROXY_FULL_ADDRESS" ] && \
+echo "Acquire::http::Proxy \"http://$PROXY_FULL_ADDRESS/\";" > $CHROOT/etc/apt/apt.conf.d/proxy.conf
+
 cat << EOF > $CHROOT/etc/apt/sources.list
-# Trisquel repositories for supported software and updates  
+# Trisquel repositories for supported software and updates
 
-deb https://archive.trisquel.info/trisquel $CODENAME main
-#deb-src https://archive.trisquel.info/trisquel $CODENAME main
+deb http://archive.trisquel.org/trisquel $CODENAME main
+#deb-src https://archive.trisquel.org/trisquel $CODENAME main
 
-deb https://archive.trisquel.info/trisquel $CODENAME-updates main
-#deb-src https://archive.trisquel.info/trisquel $CODENAME-updates main
+deb http://archive.trisquel.org/trisquel $CODENAME-updates main
+#deb-src https://archive.trisquel.org/trisquel $CODENAME-updates main
 
-deb https://archive.trisquel.info/trisquel $CODENAME-security main
-#deb-src https://archive.trisquel.info/trisquel $CODENAME-security main
+deb http://archive.trisquel.org/trisquel $CODENAME-security main
+#deb-src https://archive.trisquel.org/trisquel $CODENAME-security main
 
-#deb https://archive.trisquel.info/trisquel $CODENAME-backports main
-#deb-src https://archive.trisquel.info/trisquel $CODENAME-backports main
+#deb http://archive.trisquel.org/trisquel $CODENAME-backports main
+#deb-src https://archive.trisquel.org/trisquel $CODENAME-backports main
 EOF
 
 ## POST-CONFIGURATION ########################################################
@@ -362,7 +381,8 @@ cp files/artwork/$CODENAME/back.jpg master/isolinux/back.jpg
 
 ## Hardware ID's ##
 $C update-pciids
-$C update-usbids
+# update-usbids deprecated after etiona 9.0
+version_gt "$REL" 9.0 || $C update-usbids
 ##############################################################################
 
 echo "-- CLEANING UP ---------------------------------------------------------------"
@@ -380,7 +400,7 @@ $C apt-get autoclean
 
 rm -rf $CHROOT/var/cache/apt-xapian-index/*
 ##############################################################################
-                                                                              
+
 
 [ $DIST = 'trisquel-sugar' ] && echo "background=/usr/share/plymouth/themes/sugar/sugar.png"  >> $CHROOT/etc/lightdm/lightdm-gtk-greeter.conf
 [ $DIST = 'trisquel-sugar' ] && echo -e "[Seat:*]\nuser-session=sugar"  >> $CHROOT/etc/lightdm/lightdm.conf.d/sugar.conf
@@ -413,22 +433,35 @@ echo "" > $CHROOT/etc/hosts
 ##############################################################################
 
 #update the kernel image in the master dir
-INITRD=$( basename $DIST-$ARCH/boot/initrd.img* )
-#mv $DIST-$ARCH/boot/$INITRD $DIST-$ARCH/boot/${INITRD}.gz
-#gunzip $DIST-$ARCH/boot/${INITRD}.gz
-#lzma -9 $DIST-$ARCH/boot/$INITRD
-#mv $DIST-$ARCH/boot/${INITRD}.lzma $DIST-$ARCH/boot/${INITRD}.lz
-cp  $CHROOT/boot/$INITRD $CHROOT/tmp/initrd.gz
-$C /sbin/casper-new-uuid /tmp/initrd.gz /boot/initrd.gz /boot/casper-uuid-generic
-rm $CHROOT/tmp/initrd.gz
-#rm -f $DIST-$ARCH/boot/$INITRD.lz
-mv $DIST-$ARCH/boot/${INITRD} master/casper/initrd
-mv $DIST-$ARCH/casper-uuid-generic master/.disk
+INITRD=$( basename $DIST-$ARCH/boot/initrd.img-* )
+NEW_UUID=$(uuidgen -r)
 
-mv -v $DIST-$ARCH/boot/vmlinuz*  master/casper/vmlinuz
+if [ $REL = 10.0 ]; then
+#mkdir -p $CHROOT/tmp/uninitrd
+#unmkinitramfs $CHROOT/boot/${INITRD} $CHROOT/tmp/uninitrd
+#echo $NEW_UUID | tee $CHROOT/tmp/uninitrd/conf/uuid.conf
+#$C cd /tmp/uninitrd/ && \
+#$C find . 2>/dev/null | cpio --quiet -R 0:0 --reproducible -o -H newc | lz4 -9 -l  > /boot/initrd.lz4
+#file $CHROOT/boot/initrd.lz4
+#rm -r $CHROOT/tmp/uninitrd
+# -- seems like none is required to boot ^^
+echo $NEW_UUID | tee $CHROOT/boot/casper-uuid-generic
+mv $CHROOT/boot/${INITRD} master/casper/initrd
+fi
+
+
+if [ $REL = 9.0 ]; then
+cp  $CHROOT/boot/$INITRD $CHROOT/tmp/initrd.gz && \
+$C /sbin/casper-new-uuid /tmp/initrd.gz /boot/initrd.gz /boot/casper-uuid-generic && \
+rm $CHROOT/tmp/initrd.gz && \
+mv $DIST-$ARCH/boot/${INITRD} master/casper/initrd
+fi
+
+mv -v $DIST-$ARCH/boot/vmlinuz-* master/casper/vmlinuz
+
+mv $(find $DIST-$ARCH/boot -name casper-uuid-generic) master/.disk
 
 fuser -k -9 $DIST-$ARCH || true
-
 
 # Ugly hack to fix a problem with the live image FS access
 echo "chmod 644 /usr/lib/locale/locale-archive" >> $CHROOT/usr/sbin/locale-gen
