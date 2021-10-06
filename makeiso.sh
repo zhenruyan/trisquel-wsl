@@ -224,6 +224,10 @@ DELETE_CHROOT $CHROOT
 mkdir $CHROOT
 #[ $i18n = "false" ] && mount -t tmpfs none -o size=2500M $CHROOT
 mount -t tmpfs none -o size=16000M $CHROOT
+
+#use proxy only if proxy variable is set
+[ -n "$PROXY_FULL_ADDRESS" ] && \
+export http_proxy=$PROXY_FULL_ADDRESS
 debootstrap --arch=$ARCH $CODENAME $CHROOT $MIRROR
 
 echo exit 101 > $CHROOT/usr/sbin/policy-rc.d
