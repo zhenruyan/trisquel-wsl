@@ -395,6 +395,11 @@ umount $CHROOT/proc
 umount $CHROOT/dev/pts
 umount $CHROOT/sys
 
+# Finish proxy use
+[ -n $PROXY_FULL_ADDRESS ] && \
+rm $CHROOT/etc/apt/apt.conf.d/proxy.conf && \
+unset http_proxy
+
 $C apt-get update
 $C apt-get clean
 $C apt-get autoclean
