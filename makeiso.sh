@@ -27,14 +27,23 @@ fi
 # True if $1 is greater than $2
 version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
 
-export TRACKER=http://trisquel.org:6969/announce
-export MIRRORS="http://cdimage.trisquel.org/trisquel-images/
-http://mirror.fsf.org/trisquel-images/
-http://mirror.cedia.org.ec/trisquel.iso/
-http://mirrors.ustc.edu.cn/trisquel-images/
-http://ftp.caliu.cat/pub/distribucions/trisquel/iso/
-http://ftp.acc.umu.se/mirror/trisquel/iso/
-http://mirrors.ocf.berkeley.edu/trisquel-images/"
+export TRACKER=http://tracker.trisquel.org:6969/announce
+export MIRRORS="https://cdimage.trisquel.org/trisquel-images/
+https://mirror.fsf.org/trisquel-images/
+https://mirror.math.princeton.edu/pub/trisquel-iso/
+https://mirrors.ocf.berkeley.edu/trisquel-images/
+https://ftp.acc.umu.se/mirror/trisquel/iso/
+https://mirror.linux.pizza/trisquel/images/
+https://ftpmirror1.infania.net/mirror/trisquel/iso/
+https://mirror.operationtulip.com/trisquel/images/
+https://mirror.librelabucm.org/trisquel-images/
+https://ftp.caliu.cat/pub/distribucions/trisquel/iso/
+https://quantum-mirror.hu/mirrors/pub/trisquel/iso/
+https://mirror.cedia.org.ec/trisquel.iso/
+https://mirrors.dotsrc.org/trisquel-iso/
+https://mirrors.ustc.edu.cn/trisquel-images/
+https://mirrors.nju.edu.cn/trisquel-images/
+https://mirror.csclub.uwaterloo.ca/trisquel/iso/"
 export MIRROR="http://archive.trisquel.org/trisquel/" # The upstream full repository
 export MKTORRENT=$PWD/"files/mktorrent-1.0/mktorrent"
 #Add proxy support only if proxy variable is specified.
@@ -102,6 +111,7 @@ export VERSION=$(wget -q -O - https://archive.trisquel.org/trisquel/dists/$CODEN
 [ $CODENAME = slaine ] && UPSTREAM=maverick
 [ $CODENAME = dagda ] && UPSTREAM=natty
 [ $CODENAME = brigantia ] && UPSTREAM=oneiric
+export VERSION=9.0.1
 
 echo $* | grep -q i18n && i18n=true || i18n=false
 # Make a FSF membercard image?
@@ -165,7 +175,7 @@ for file in $(find . -type f|sed 's_./__'); do
 done
 
 cd ..
-mkisofs -f -J  -joliet-long -r  -V "trisquel-$VERSION src" -o iso/trisquel_${VERSION}_sources.iso source
+xorriso -as mkisofs -f -J  -joliet-long -r  -V "trisquel-$VERSION src" -o iso/trisquel_${VERSION}_sources.iso source
 
 SEEDS=$(for i in $MIRRORS
 do
@@ -215,7 +225,6 @@ touch master/.disk/base_installable
 echo 'full_cd/single' > master/.disk/cd_type
 
 TXTCFG=files/$DIST.cfg
-[ $ARCH = "i386" ] && [ $DIST = "trisquel" ] && TXTCFG=files/trisquel-nonetinst.cfg
 cp $TXTCFG master/isolinux/txt.cfg
 
 DELETE_CHROOT $CHROOT
@@ -459,7 +468,7 @@ fi
 
 mv -v $DIST-$ARCH/boot/vmlinuz-* master/casper/vmlinuz
 
-mv $(find $DIST-$ARCH/boot -name casper-uuid-generic) master/.disk
+mv $DIST-$ARCH/casper-uuid-generic master/.disk
 
 fuser -k -9 $DIST-$ARCH || true
 
