@@ -3,7 +3,7 @@
 set -eE -o pipefail
 
 CODENAME=$1
-GPG_KEY="C05112F"
+GPG_KEY="60364C9869F92450421F0C22B138CA450C05112F"
 
 [ -z $CODENAME ] && echo "usage: $0 etiona|nabia" && exit
 [ -z $GPG_KEY ] && echo "It's required to setup a full GPG key" && exit
