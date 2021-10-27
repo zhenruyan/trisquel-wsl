@@ -10,3 +10,4 @@ doall
 source/*
 source
 files/initrd.netinst.*
+files/vmlinuz.netinst.*

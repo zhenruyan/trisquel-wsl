@@ -261,6 +261,15 @@ mount -t sysfs none $CHROOT/sys
 mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
+#https://builds.trisquel.org/efi-image-repo/nabia_efi_repo.tar.gz
+EFI_LOCAL_REPO="http://builds.trisquel.org/efi/"
+DISTRO_REPO=$(curl -s $EFI_LOCAL_REPO|grep $CODENAME|awk -F'"' '{print$6}')
+
+#Get and copy repo to master
+wget -q $EFI_LOCAL_REPO/$DISTRO_REPO
+tar -zxvf $DISTRO_REPO  --directory master/
+rm $DISTRO_REPO
+
 KERNEL=linux-generic
 
 # package install
@@ -409,7 +418,8 @@ $C apt-get autoclean
 
 rm -rf $CHROOT/var/cache/apt-xapian-index/*
 ##############################################################################
-
+#Launch prepare netinstall iso and components for larger isos.
+bash files/netinst-prepare.sh $REL
 
 [ $DIST = 'trisquel-sugar' ] && echo "background=/usr/share/plymouth/themes/sugar/sugar.png"  >> $CHROOT/etc/lightdm/lightdm-gtk-greeter.conf
 [ $DIST = 'trisquel-sugar' ] && echo -e "[Seat:*]\nuser-session=sugar"  >> $CHROOT/etc/lightdm/lightdm.conf.d/sugar.conf
@@ -468,7 +478,7 @@ fi
 
 mv -v $DIST-$ARCH/boot/vmlinuz-* master/casper/vmlinuz
 
-mv $(find $DIST-$ARCH/boot -name casper-uuid-generic) master/.disk
+mv $(find $DIST-$ARCH/ -name casper-uuid-generic) master/.disk
 
 fuser -k -9 $DIST-$ARCH || true
 
@@ -508,8 +518,13 @@ cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
 
-cp files/repo/$ARCH/pool master -a || true
-cp files/repo/$ARCH/dists master -a
+if [ -d master/pool ] && [ -d master/distro ]; then
+  echo "There is already an updated repo available, continuing..."
+else
+  echo "Copying static repo..."
+  cp files/repo/$ARCH/pool master -a || true
+  cp files/repo/$ARCH/dists master -a
+fi
 
 #VERSION=$VERSION-$(date +%Y%m%d)
 

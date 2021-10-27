@@ -24,24 +24,40 @@ cd files || true
 DATE=$(date +%Y%m%d)
 VERSION=$1
 RELEASE=$(echo $1 |sed 's/.*+//;s/trisquel.*//')
+DEB_INST_IMAGE="https://builds.trisquel.org/debian-installer-images/"
+
+# True if $1 is greater than $2
+version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
 
 if [ $# -ne 1 ]; then
   echo Usage: $0 netinst-version
   exit 1
 fi
 
-for ARCH in i386 amd64
-do
+if version_gt "$RELEASE" 9.0 ; then
+VALID_ARCH="amd64"
+IMAGES="legacy-images"
+else
+VALID_ARCH="i386 amd64"
+IMAGES="images"
+fi
 
-tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/netboot/ubuntu-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
+for ARCH in $VALID_ARCH
+do
+LATEST_DATE=$(curl -s $DEB_INST_IMAGE|grep +$RELEASE|grep $ARCH|awk -F ' ' '{print$7,$8}'|sort -r|head -n1)
+LATEST_TAR=$(curl -s $DEB_INST_IMAGE|grep +$RELEASE|grep $ARCH|grep "$LATEST_DATE"|awk -F'"' '{print$6}')
+wget -q $DEB_INST_IMAGE$LATEST_TAR
+tar --wildcards -zxvf  $LATEST_TAR  "./installer-$ARCH/*/$IMAGES/netboot/ubuntu-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
 
 gunzip -f initrd.netinst.$ARCH.gz
 lzma -9 initrd.netinst.$ARCH
 mv initrd.netinst.$ARCH.lzma initrd.netinst.$ARCH
 
-tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/cdrom/vmlinuz" -O > vmlinuz.netinst.$ARCH
+tar --wildcards -zxvf  $LATEST_TAR  "./installer-$ARCH/*/$IMAGES/cdrom/vmlinuz" -O > vmlinuz.netinst.$ARCH
 
-tar --wildcards -zxvf  /home/pub/debian-installer-images/debian-installer-images_${VERSION}_${ARCH}.tar.gz  "./installer-$ARCH/*/images/netboot/mini.iso" -O > ../iso/trisquel-netinst_$RELEASE-${DATE}_$ARCH.iso
+tar --wildcards -zxvf  $LATEST_TAR  "./installer-$ARCH/*/$IMAGES/netboot/mini.iso" -O > ../iso/trisquel-netinst_$RELEASE-${DATE}_$ARCH.iso
+
+rm $LATEST_TAR
 
 if [ $ARCH = i386 ] ; then
  mv ../iso/trisquel-netinst_$RELEASE-${DATE}_$ARCH.iso ../iso/trisquel-netinst_$RELEASE-${DATE}_i686.iso
