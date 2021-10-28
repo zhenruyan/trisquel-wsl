@@ -261,12 +261,13 @@ mount -t sysfs none $CHROOT/sys
 mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
-#https://builds.trisquel.org/efi-image-repo/nabia_efi_repo.tar.gz
-EFI_LOCAL_REPO="http://builds.trisquel.org/efi/"
-DISTRO_REPO=$(curl -s $EFI_LOCAL_REPO|grep $CODENAME|awk -F'"' '{print$6}')
+#Setup local EFI repository
+EFI_LOCAL_REPO="http://builds.trisquel.org/efi"
+DISTRO_REPO=$(curl -s $EFI_LOCAL_REPO/|grep $CODENAME|awk -F'"' '{print$6}')
 
 #Get and copy repo to master
 wget -q $EFI_LOCAL_REPO/$DISTRO_REPO
+rm -rf master/{dists,pool}
 tar -zxvf $DISTRO_REPO  --directory master/
 rm $DISTRO_REPO
 
@@ -517,14 +518,6 @@ find casper -type f | xargs md5sum > md5sum.txt
 cd $WORKDIR
 
 [ $ARCH = "i386" ] && SUBARCH=i686 || SUBARCH=amd64
-
-if [ -d master/pool ] && [ -d master/distro ]; then
-  echo "There is already an updated repo available, continuing..."
-else
-  echo "Copying static repo..."
-  cp files/repo/$ARCH/pool master -a || true
-  cp files/repo/$ARCH/dists master -a
-fi
 
 #VERSION=$VERSION-$(date +%Y%m%d)
 

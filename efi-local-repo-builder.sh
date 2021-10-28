@@ -55,6 +55,7 @@ mkdir -p ${CODENAME}_efi_repo/amd64/{conf,incoming}
 #Get packages
 apt-get -c $LOCAL_APT/apt.conf \
         --print-uris  install efibootmgr \
+                              grub-efi-amd64 \
                               grub-efi-amd64-bin | \
         cut -d\' -f2|grep http > ${CODENAME}_efi_repo/amd64/incoming/efi_wget.list
 
