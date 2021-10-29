@@ -46,22 +46,40 @@ deb [signed-by=/usr/share/keyrings/trisquel-archive-keyring.gpg] http://archive.
 SOURCES
 
 echo -e "\n >>>> Getting updated available $CODENAME packages to create repo...\n"
+ISO_URL="http://cdbuilds.trisquel.org/$CODENAME"
+LATEST_MANIFEST_DATE="$(curl -s $ISO_URL/|grep -v sources|grep manifest|awk '{print$3}'|sort|tail -n1)"
+MANIFEST_NAME="$(curl -s $ISO_URL/|grep manifest|grep $LATEST_MANIFEST_DATE|cut -d '"' -f2|tail -n1)"
+ISO_MANIFEST_URL="$ISO_URL/$MANIFEST_NAME"
+
 apt-get -q update -c $LOCAL_APT/apt.conf
 
 #Create files
-[ -d ${CODENAME}_efi_repo ] && rm -r ${CODENAME}_efi_repo
+rm -rf ${CODENAME}_efi_repo
 mkdir -p ${CODENAME}_efi_repo/amd64/{conf,incoming}
 
-#Get packages
+#Get iso 'manifest'
 apt-get -c $LOCAL_APT/apt.conf \
         --print-uris  install efibootmgr \
                               grub-efi-amd64 \
                               grub-efi-amd64-bin | \
-        cut -d\' -f2|grep http > ${CODENAME}_efi_repo/amd64/incoming/efi_wget.list
+        cut -d\' -f2|grep http > ${CODENAME}_efi_repo/amd64/incoming/efi_raw.list
 
-wget -q -P ${CODENAME}_efi_repo/amd64/incoming/ -i \
-           ${CODENAME}_efi_repo/amd64/incoming/efi_wget.list && \
-     rm -r ${CODENAME}_efi_repo/amd64/incoming/efi_wget.list
+#Clean raw download list for strictly required packages.
+cd ${CODENAME}_efi_repo/amd64/incoming
+awk -F '/' '{print$9}' efi_raw.list |cut -d '_' -f1 | sort > efi.manifest
+curl -s "$ISO_MANIFEST_URL" | awk '{print$1}' | awk -F':' '{print$1}' | sort > iso.manifest
+comm -23 efi.manifest iso.manifest > minimal_efi_packages.list
+
+echo "Packages to be downloaded:"
+cat minimal_efi_packages.list
+
+#Download strictly required packages.
+for _efi in $(cat minimal_efi_packages.list)
+do
+    apt-get -c $LOCAL_APT/apt.conf download "$_efi"
+done
+
+cd ../../..
 
 #Setup repo
 cat << REPO > ${CODENAME}_efi_repo/amd64/conf/distributions
