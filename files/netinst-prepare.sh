@@ -24,7 +24,7 @@ cd files || true
 DATE=$(date +%Y%m%d)
 VERSION=$1
 RELEASE=$(echo $1 |sed 's/.*+//;s/trisquel.*//')
-DEB_INST_IMAGE="https://builds.trisquel.org/debian-installer-images/"
+DEB_INST_IMAGE="https://builds.trisquel.org/debian-installer-images"
 
 # True if $1 is greater than $2
 version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
@@ -44,9 +44,10 @@ fi
 
 for ARCH in $VALID_ARCH
 do
-LATEST_DATE=$(curl -s $DEB_INST_IMAGE|grep +$RELEASE|grep $ARCH|awk -F ' ' '{print$7,$8}'|sort -r|head -n1)
-LATEST_TAR=$(curl -s $DEB_INST_IMAGE|grep +$RELEASE|grep $ARCH|grep "$LATEST_DATE"|awk -F'"' '{print$6}')
-wget -q $DEB_INST_IMAGE$LATEST_TAR
+LATEST_DATE=$(curl -s $DEB_INST_IMAGE/|grep +$RELEASE|grep $ARCH|awk -F ' ' '{print$7,$8}'|sort -r|head -n1)
+LATEST_TAR=$(curl -s $DEB_INST_IMAGE/|grep +$RELEASE|grep $ARCH|grep "$LATEST_DATE"|awk -F'"' '{print$6}')
+wget -q $DEB_INST_IMAGE/$LATEST_TAR
+
 tar --wildcards -zxvf  $LATEST_TAR  "./installer-$ARCH/*/$IMAGES/netboot/ubuntu-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
 
 gunzip -f initrd.netinst.$ARCH.gz
@@ -64,4 +65,6 @@ if [ $ARCH = i386 ] ; then
  ARCH=i686
 fi
 
-done  
+done
+
+echo finished without errors
