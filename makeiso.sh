@@ -103,8 +103,8 @@ esac
 
 export CODENAME=$4
 export VERSION=$(wget -q -O - https://archive.trisquel.org/trisquel/dists/$CODENAME/Release|grep ^Version:|cut -d" " -f2)
-[ $CODENAME = nabia ] && UPSTREAM=focal && REL=10.0
-[ $CODENAME = etiona ] && UPSTREAM=bionic && REL=9.0 && VERSION=9.0.1
+[ $CODENAME = nabia ] && UPSTREAM=focal && REL=10.0 && VERSION=10.0
+[ $CODENAME = etiona ] && UPSTREAM=bionic && REL=9.0 && VERSION=9.0.2
 [ $CODENAME = flidas ] && UPSTREAM=xenial && REL=8.0
 [ $CODENAME = belenos ] && UPSTREAM=trusty
 [ $CODENAME = taranis ] && UPSTREAM=lucid
@@ -158,8 +158,9 @@ $fsf && VERSION=${VERSION}fsf
 for i in $(cut -d" " -f1 $MANIFESTS |sort -u)
 do
 i=$(echo $i| sed 's/:.*//')
+source=$(apt-cache showsrc $i | head -n 1 | grep '^Package: ' | awk '{print $2}')
     echo Package: $i
-    source=$(apt-cache showsrc $i | grep '^Package: ' | awk '{print $2}')
+    [ -f ${source}_*dsc ] && continue || true
     apt-get source -d $source || echo $i:$source >> ../NOT-FOUND
 done
 
@@ -270,14 +271,18 @@ mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
 #Setup local EFI repository
+rm -rf master/{dists,pool}
+if [ $ARCH = amd64 ]; then
 EFI_LOCAL_REPO="http://builds.trisquel.org/efi"
 DISTRO_REPO=$(curl -s $EFI_LOCAL_REPO/|grep $CODENAME|awk -F'"' '{print$6}')
 
 #Get and copy repo to master
 wget -q $EFI_LOCAL_REPO/$DISTRO_REPO
-rm -rf master/{dists,pool}
 tar -zxvf $DISTRO_REPO  --directory master/
 rm $DISTRO_REPO
+else
+cp files/repo/i386/* -a master/
+fi
 
 KERNEL=linux-generic
 

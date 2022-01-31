@@ -1,0 +1,8 @@
+Source origins for binaries in this directory:
+
+FILE: PACKAGE
+bootlogo: gfxboot-theme-trisquel
+chain.c32: syslinux-common
+gfxboot.c32: syslinux-common
+isolinux.bin: isolinux-common
+vesamenu.c32: syslinux-common
