@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#    Copyright (C) 2004-2020 Ruben Rodriguez <ruben@trisquel.info>
+#    Copyright (C) 2004-2022 Ruben Rodriguez <ruben@trisquel.info>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -102,15 +102,9 @@ trisquel|trisquel-mini|trisquel-sugar|triskel)	export DIST=$3
 esac
 
 export CODENAME=$4
-export VERSION=$(wget -q -O - https://archive.trisquel.org/trisquel/dists/$CODENAME/Release|grep ^Version:|cut -d" " -f2)
-[ $CODENAME = nabia ] && UPSTREAM=focal && REL=10.0
-[ $CODENAME = etiona ] && UPSTREAM=bionic && REL=9.0 && VERSION=9.0.1
-[ $CODENAME = flidas ] && UPSTREAM=xenial && REL=8.0
-[ $CODENAME = belenos ] && UPSTREAM=trusty
-[ $CODENAME = taranis ] && UPSTREAM=lucid
-[ $CODENAME = slaine ] && UPSTREAM=maverick
-[ $CODENAME = dagda ] && UPSTREAM=natty
-[ $CODENAME = brigantia ] && UPSTREAM=oneiric
+[ $CODENAME = nabia ] && UPSTREAM=focal && VERSION=10.0
+[ $CODENAME = etiona ] && UPSTREAM=bionic && VERSION=9.0
+[ $CODENAME = flidas ] && UPSTREAM=xenial && VERSION=8.0
 
 echo $* | grep -q i18n && i18n=true || i18n=false
 # Make a FSF membercard image?
@@ -147,19 +141,19 @@ deb-src $MIRROR $CODENAME-security main
 EOF
 
 apt-get update
-rm -rf source
-mkdir source
+#rm -rf source
+#mkdir source
 cd source
 
 MANIFESTS=../iso/*manifest
 $fsf && MANIFESTS=../iso/*fsf*manifest
 $fsf && VERSION=${VERSION}fsf
 
-for i in $(cut -d" " -f1 $MANIFESTS |sort -u)
-do
+for i in $(cut -d" " -f1 $MANIFESTS |sort -u); do
 i=$(echo $i| sed 's/:.*//')
-    echo Package: $i
-    source=$(apt-cache showsrc $i | grep '^Package: ' | awk '{print $2}')
+source=$(apt-cache showsrc $i | head -n 1 | grep '^Package: ' | awk '{print $2}')
+    echo "Package: $i (source: $source)"
+    [ -f ${source}_*dsc ] && continue || true
     apt-get source -d $source || echo $i:$source >> ../NOT-FOUND
 done
 
@@ -284,7 +278,7 @@ KERNEL=linux-generic
 # package install
 echo "KERNEL=$KERNEL" > $CHROOT/tmp/install
 echo "DIST=$DIST" >> $CHROOT/tmp/install
-echo "REL=$REL" >> $CHROOT/tmp/install
+echo "VERSION=$VERSION" >> $CHROOT/tmp/install
 echo 'LANG=C
 apt-get update
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $KERNEL trisquel-minimal trisquel-base
@@ -303,9 +297,9 @@ apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-he
 aptitude unmarkauto $(apt-cache depends trisquel-desktop-common-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $(apt-cache show $DIST | grep ^Suggests|sed s/Suggests://|sed s/\,//g|head -n1)
-[ $REL = 9.0 ] && \
+[ $VERSION = 9.0 ] && \
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all vdpau-va-driver  casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
-[ $REL = 10.0 ] && \
+[ $VERSION = 10.0 ] && \
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
 
 
@@ -397,14 +391,24 @@ mkdir -p $CHROOT/etc/skel/.local/share
 
 $fsf && cp files/fsf master/fsf -a
 cp files/artwork/$CODENAME/back.jpg master/isolinux/back.jpg
+$fsf && cp files/artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
 [ $DIST = trisquel-sugar ] && cp files/artwork/sugar/back-sugar.jpg master/isolinux/back.jpg
+
+# Update master/isolinux/bootlogo
+BLTMP=$(mktemp -d)
+cp master/isolinux/bootlogo $BLTMP
+(cd $BLTMP; cpio -id < bootlogo)
+cp master/isolinux/* $BLTMP
+rm $BLTMP/bootlogo
+(cd $BLTMP; ls | cpio -o > /tmp/bootlogo)
+mv /tmp/bootlogo master/isolinux/bootlogo
 
 ##############################################################################
 
 ## Hardware ID's ##
 $C update-pciids
 # update-usbids deprecated after etiona 9.0
-version_gt "$REL" 9.0 || $C update-usbids
+version_gt "$VERSION" 9.0 || $C update-usbids
 ##############################################################################
 
 echo "-- CLEANING UP ---------------------------------------------------------------"
@@ -423,12 +427,13 @@ $C apt-get clean
 $C apt-get autoclean
 
 [ -f  $CHROOT/usr/lib/locale/locale-archive ] && rm -v $CHROOT/usr/lib/locale/locale-archive
-[ $DIST = trisquel-sugar ]  && $C locale-gen && $C update-locale LANG=en_US.UTF-8
+$C locale-gen en_US.UTF-8
+[ $DIST = trisquel-sugar ]  && $C update-locale LANG=en_US.UTF-8
 
 rm -rf $CHROOT/var/cache/apt-xapian-index/*
 ##############################################################################
 #Launch prepare netinstall iso and components for larger isos.
-bash files/netinst-prepare.sh $REL
+bash files/netinst-prepare.sh $VERSION
 
 [ $DIST = 'trisquel-sugar' ] && echo "background=/usr/share/plymouth/themes/sugar/sugar.png"  >> $CHROOT/etc/lightdm/lightdm-gtk-greeter.conf
 [ $DIST = 'trisquel-sugar' ] && echo -e "[Seat:*]\nuser-session=sugar"  >> $CHROOT/etc/lightdm/lightdm.conf.d/sugar.conf
@@ -456,6 +461,8 @@ do
     find $dir -type f |xargs -r rm
 done
 
+$C chown _apt.root -R /var/lib/apt/lists
+
 ## Hosts ##
 echo "" > $CHROOT/etc/hosts
 ##############################################################################
@@ -464,7 +471,7 @@ echo "" > $CHROOT/etc/hosts
 INITRD=$( basename $DIST-$ARCH/boot/initrd.img-* )
 NEW_UUID=$(uuidgen -r)
 
-if [ $REL = 10.0 ]; then
+if [ $VERSION = 10.0 ]; then
 #mkdir -p $CHROOT/tmp/uninitrd
 #unmkinitramfs $CHROOT/boot/${INITRD} $CHROOT/tmp/uninitrd
 #echo $NEW_UUID | tee $CHROOT/tmp/uninitrd/conf/uuid.conf
@@ -478,7 +485,7 @@ mv $CHROOT/boot/${INITRD} master/casper/initrd
 fi
 
 
-if [ $REL = 9.0 ]; then
+if [ $VERSION = 9.0 ]; then
 cp  $CHROOT/boot/$INITRD $CHROOT/tmp/initrd.gz && \
 $C /sbin/casper-new-uuid /tmp/initrd.gz /boot/initrd.gz /boot/casper-uuid-generic && \
 rm $CHROOT/tmp/initrd.gz && \

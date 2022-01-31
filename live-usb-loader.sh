@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#    Copyright (C) 2012-2020  Ruben Rodriguez <ruben@trisquel.info>
+#    Copyright (C) 2012-2022  Ruben Rodriguez <ruben@trisquel.info>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ exit 1
 
 ISO=$1
 DEV=$2
-PERSISTENCESIZE=500 # Sice of the persistence file, in MB
+#PERSISTENCESIZE=500 # Sice of the persistence file, in MB
 
 ISOTMP=$(mktemp -d)
 DEVTMP=$(mktemp -d)
@@ -43,12 +43,12 @@ umount $DEV* || true
 mount -o loop $ISO $ISOTMP
 
 # Create FAT32 LBA partition taking all disk
-echo 'start=2048, type=c' | sfdisk /dev/$DEV
+echo 'start=2048, type=c' | sfdisk $DEV
 mkfs.vfat -I -F32 ${DEV}1
 
 # Copy the data
 mount ${DEV}1 $DEVTMP
-cp -vr $ISOTMP/* $ISOTMP/.disk $DEVTMP
+cp -vr $ISOTMP/* $ISOTMP/.disk $DEVTMP || true
 
 mv $DEVTMP/isolinux $DEVTMP/syslinux
 mv $DEVTMP/syslinux/isolinux.cfg $DEVTMP/syslinux/syslinux.cfg
@@ -60,12 +60,10 @@ mv $DEVTMP/syslinux/isolinux.cfg $DEVTMP/syslinux/syslinux.cfg
 
 umount $DEVTMP
 
-# Set up bootloader, requires syslinux 4x
-# http://archive.trisquel.info/trisquel/pool/main/s/syslinux/syslinux-common_4.05+dfsg-6+deb8u1_all.deb
-#http://archive.trisquel.info/trisquel/pool/main/s/syslinux/syslinux_4.05+dfsg-6+deb8u1_amd64.deb
 syslinux ${DEV}1
-dd conv=notrunc if=/usr/lib/syslinux/mbr.bin bs=440 count=1 of=$DEV
+dd conv=notrunc if=/usr/lib/syslinux/mbr/mbr.bin bs=440 count=1 of=$DEV
 parted $DEV set 1 boot on
+sync
 
 eject $DEV
 
