@@ -102,8 +102,8 @@ trisquel|trisquel-mini|trisquel-sugar|triskel)	export DIST=$3
 esac
 
 export CODENAME=$4
-[ $CODENAME = nabia ] && UPSTREAM=focal && VERSION=10.0
-[ $CODENAME = etiona ] && UPSTREAM=bionic && VERSION=9.0
+[ $CODENAME = nabia ] && UPSTREAM=focal && MVER=10.0 && VERSION=10.0.1
+[ $CODENAME = etiona ] && UPSTREAM=bionic && MVER=9.0 && VERSION=9.0.2
 [ $CODENAME = flidas ] && UPSTREAM=xenial && VERSION=8.0
 
 echo $* | grep -q i18n && i18n=true || i18n=false
@@ -297,9 +297,9 @@ apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-he
 aptitude unmarkauto $(apt-cache depends trisquel-desktop-common-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $(apt-cache show $DIST | grep ^Suggests|sed s/Suggests://|sed s/\,//g|head -n1)
-[ $VERSION = 9.0 ] && \
+[ $MVER = 9.0 ] && \
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all vdpau-va-driver  casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
-[ $VERSION = 10.0 ] && \
+[ $MVER = 10.0 ] && \
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
 
 
@@ -433,7 +433,7 @@ $C locale-gen en_US.UTF-8
 rm -rf $CHROOT/var/cache/apt-xapian-index/*
 ##############################################################################
 #Launch prepare netinstall iso and components for larger isos.
-bash files/netinst-prepare.sh $VERSION
+bash files/netinst-prepare.sh $MVER
 
 [ $DIST = 'trisquel-sugar' ] && echo "background=/usr/share/plymouth/themes/sugar/sugar.png"  >> $CHROOT/etc/lightdm/lightdm-gtk-greeter.conf
 [ $DIST = 'trisquel-sugar' ] && echo -e "[Seat:*]\nuser-session=sugar"  >> $CHROOT/etc/lightdm/lightdm.conf.d/sugar.conf
@@ -471,7 +471,7 @@ echo "" > $CHROOT/etc/hosts
 INITRD=$( basename $DIST-$ARCH/boot/initrd.img-* )
 NEW_UUID=$(uuidgen -r)
 
-if [ $VERSION = 10.0 ]; then
+if [ $MVER = 10.0 ]; then
 #mkdir -p $CHROOT/tmp/uninitrd
 #unmkinitramfs $CHROOT/boot/${INITRD} $CHROOT/tmp/uninitrd
 #echo $NEW_UUID | tee $CHROOT/tmp/uninitrd/conf/uuid.conf
@@ -485,7 +485,7 @@ mv $CHROOT/boot/${INITRD} master/casper/initrd
 fi
 
 
-if [ $VERSION = 9.0 ]; then
+if [ $MVER = 9.0 ]; then
 cp  $CHROOT/boot/$INITRD $CHROOT/tmp/initrd.gz && \
 $C /sbin/casper-new-uuid /tmp/initrd.gz /boot/initrd.gz /boot/casper-uuid-generic && \
 rm $CHROOT/tmp/initrd.gz && \
