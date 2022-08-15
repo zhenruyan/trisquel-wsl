@@ -286,7 +286,7 @@ apt-get clean
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | sed s/.*:.//)
 apt-get clean
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends ${DIST}-recommended
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends ${DIST}-recommended spice-vdagent
 aptitude unmarkauto $(apt-cache depends $DIST-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends trisquel-base-recommended
