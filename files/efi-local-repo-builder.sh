@@ -57,6 +57,10 @@ SOURCES
 
 echo -e "\n >>>> Getting updated available $CODENAME packages to create repo...\n"
 ISO_URL="http://cdbuilds.trisquel.org/$CODENAME"
+if [ "$(curl -s -o /dev/null -w "%{http_code}" "$ISO_URL")" == "404" ]; then
+    echo -e "There is no manifest file at the current release url: $ISO_URL\n"
+    exit
+fi
 LATEST_MANIFEST_DATE="$(curl -s "$ISO_URL"/|grep -v sources|grep manifest|awk '{print$3}'|sort|tail -n1)"
 MANIFEST_NAME="$(curl -s "$ISO_URL"/|grep manifest|grep "$LATEST_MANIFEST_DATE"|cut -d '"' -f2|tail -n1)"
 ISO_MANIFEST_URL="$ISO_URL/$MANIFEST_NAME"
