@@ -20,8 +20,8 @@ sodipodi:absref="/FIX-PATH/makeiso/files/artwork/release-place-holder.png"
 The template inlcudes all the required icons, using inkscape you can alternate and
 export the necessary images,
 
-* back.jpg
-* back-fsf.jpg
+* back.png
+* back-fsf.png
 * grub.png
 * grub-fsf.png
 
