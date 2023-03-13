@@ -1,0 +1,98 @@
+Package: efibootmgr
+Version: 17-1
+Architecture: amd64
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Original-Maintainer: Debian UEFI Maintainers <debian-efi@lists.debian.org>
+Installed-Size: 91
+Depends: libc6 (>= 2.14), libefiboot1 (>= 37), libefivar1 (>= 37), libpopt0 (>= 1.14)
+Multi-Arch: foreign
+Priority: optional
+Section: admin
+Filename: pool/main/e/efibootmgr/efibootmgr_17-1_amd64.deb
+Size: 28132
+SHA256: 0da33e43c97e5505d4d54e4145a72e76ce72278c3a9488792da86d9f30709d73
+SHA1: 807ad0748d7d68ce286c6f8106aa0a2b80a9b085
+MD5sum: f96cb80db02d40b2b7fb23e76cbef5f4
+Description: Interact with the EFI Boot Manager
+ This is a Linux user-space application to modify the Intel Extensible
+ Firmware Interface (EFI) Boot Manager configuration. This application can
+ create and destroy boot entries, change the boot order, change the next
+ running boot option, and more.
+ .
+ Additional information about (U)EFI can be found at http://www.uefi.org/.
+ .
+ Note: efibootmgr requires that the kernel module efivars be loaded prior
+ to use. 'modprobe efivars' should do the trick if it does not
+ automatically load.
+
+Package: grub-efi-amd64
+Source: grub2-unsigned
+Version: 2.04-1ubuntu44.2+10.0trisquel4
+Architecture: amd64
+Maintainer: Trisquel Developers <trisquel-devel-discuss@lists.trisquel.com>
+Installed-Size: 186
+Depends: debconf (>= 0.5) | debconf-2.0, grub-efi-amd64-bin (= 2.04-1ubuntu44.2+10.0trisquel4), grub2-common (>= 2.02~beta2-9), ucf
+Conflicts: elilo, grub, grub-coreboot, grub-efi-ia32, grub-ieee1275, grub-legacy, grub-pc, grub-xen
+Replaces: grub, grub-common (<= 1.97~beta2-1), grub-coreboot, grub-efi-ia32, grub-ieee1275, grub-legacy, grub-pc, grub2 (<< 2.04-1ubuntu44.2+10.0trisquel4)
+Multi-Arch: foreign
+Homepage: https://www.gnu.org/software/grub/
+Priority: optional
+Section: admin
+Filename: pool/main/g/grub2-unsigned/grub-efi-amd64_2.04-1ubuntu44.2+10.0trisquel4_amd64.deb
+Size: 46948
+SHA256: ba29984fe6be1cd60831327290e391a9977d7809e75f2c5c08d4a380caa713d1
+SHA1: e1d2ef44186d6e36c3ca84568133675a377a7232
+MD5sum: fd230550818c2f34ce4e28788caa1597
+Description: GRand Unified Bootloader, version 2 (EFI-AMD64 version)
+ GRUB is a portable, powerful bootloader.  This version of GRUB is based on a
+ cleaner design than its predecessors, and provides the following new features:
+ .
+  - Scripting in grub.cfg using BASH-like syntax.
+  - Support for modern partition maps such as GPT.
+  - Modular generation of grub.cfg via update-grub.  Packages providing GRUB
+    add-ons can plug in their own script rules and trigger updates by invoking
+    update-grub.
+ .
+ This is a dependency package for a version of GRUB that has been built for
+ use with the EFI-AMD64 architecture, as used by Intel Macs (unless a BIOS
+ interface has been activated).  Installing this package indicates that this
+ version of GRUB should be the active boot loader.
+Original-Maintainer: GRUB Maintainers <pkg-grub-devel@alioth-lists.debian.net>
+
+Package: grub-efi-amd64-bin
+Source: grub2-unsigned
+Version: 2.04-1ubuntu44.2+10.0trisquel4
+Architecture: amd64
+Maintainer: Trisquel Developers <trisquel-devel-discuss@lists.trisquel.com>
+Installed-Size: 7607
+Depends: grub-common (>= 2.02~beta2-9)
+Recommends: grub-efi-amd64-signed, efibootmgr
+Replaces: grub-common (<= 1.97~beta2-1), grub-efi-amd64 (<< 1.99-1), grub2 (<< 2.04-1ubuntu44.2+10.0trisquel4)
+Multi-Arch: foreign
+Homepage: https://www.gnu.org/software/grub/
+Priority: optional
+Section: admin
+Filename: pool/main/g/grub2-unsigned/grub-efi-amd64-bin_2.04-1ubuntu44.2+10.0trisquel4_amd64.deb
+Size: 728188
+SHA256: a300ca6575e28cae876a85095dd08512efaddc0626104a9757e564536b27a8ac
+SHA1: 3b8f2ef1631ac9a9729431f6355f8693905d9888
+MD5sum: 16bbe083ccbb10414049b330d05602b2
+Description: GRand Unified Bootloader, version 2 (EFI-AMD64 modules)
+ GRUB is a portable, powerful bootloader.  This version of GRUB is based on a
+ cleaner design than its predecessors, and provides the following new features:
+ .
+  - Scripting in grub.cfg using BASH-like syntax.
+  - Support for modern partition maps such as GPT.
+  - Modular generation of grub.cfg via update-grub.  Packages providing GRUB
+    add-ons can plug in their own script rules and trigger updates by invoking
+    update-grub.
+ .
+ This package contains GRUB modules that have been built for use with the
+ EFI-AMD64 architecture, as used by Intel Macs (unless a BIOS interface has
+ been activated).  It can be installed in parallel with other flavours, but
+ will not automatically install GRUB as the active boot loader nor
+ automatically update grub.cfg on upgrade unless grub-efi-amd64 is also
+ installed.
+Efi-Vendor: trisquel
+Original-Maintainer: GRUB Maintainers <pkg-grub-devel@alioth-lists.debian.net>
+

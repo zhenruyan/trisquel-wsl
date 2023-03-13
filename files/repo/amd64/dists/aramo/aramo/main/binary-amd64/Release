@@ -1,7 +1,7 @@
-Archive: etiona
-Version: 9.0
+Archive: aramo
+Version: 11.0
 Component: main
 Origin: Trisquel
 Label: Trisquel
-Architecture: i386
+Architecture: amd64
 Description: Trisquel GNU/Linux packages

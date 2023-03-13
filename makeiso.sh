@@ -271,18 +271,14 @@ mount -t tmpfs none $CHROOT/tmp
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
 #Setup local EFI repository
-rm -rf master/{dists,pool}
-if [ $ARCH = amd64 ]; then
 EFI_LOCAL_REPO="http://builds.trisquel.org/efi"
 DISTRO_REPO=$(curl -s $EFI_LOCAL_REPO/|grep $CODENAME|awk -F'"' '{print$6}')
 
 #Get and copy repo to master
 wget -q $EFI_LOCAL_REPO/$DISTRO_REPO
+rm -rf master/{dists,pool}
 tar -zxvf $DISTRO_REPO  --directory master/
 rm $DISTRO_REPO
-else
-cp files/repo/i386/* -a master/
-fi
 
 KERNEL=linux-generic
 
