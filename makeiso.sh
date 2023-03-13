@@ -429,7 +429,7 @@ $C apt-get autoclean
 rm -rf $CHROOT/var/cache/apt-xapian-index/*
 ##############################################################################
 #Launch prepare netinstall iso and components for larger isos.
-bash files/netinst-prepare.sh $REL
+bash files/netinst-prepare.sh $BASEVERSION
 
 [ $DIST = 'trisquel-sugar' ] && echo "background=/usr/share/plymouth/themes/sugar/sugar.png"  >> $CHROOT/etc/lightdm/lightdm-gtk-greeter.conf
 [ $DIST = 'trisquel-sugar' ] && echo -e "[Seat:*]\nuser-session=sugar"  >> $CHROOT/etc/lightdm/lightdm.conf.d/sugar.conf

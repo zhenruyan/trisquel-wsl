@@ -34,7 +34,10 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-if version_gt "$RELEASE" 9.0 ; then
+if [ $VERSION = 11.0 ] ; then
+VALID_ARCH="amd64"
+IMAGES="images"
+elif [ $VERSION = 10.0 ] ; then
 VALID_ARCH="amd64"
 IMAGES="legacy-images"
 else
@@ -48,7 +51,7 @@ LATEST_DATE=$(curl -s $DEB_INST_IMAGE/|grep +$RELEASE|grep $ARCH|awk -F ' ' '{pr
 LATEST_TAR=$(curl -s $DEB_INST_IMAGE/|grep +$RELEASE|grep $ARCH|grep "$LATEST_DATE"|awk -F'"' '{print$6}')
 wget -q $DEB_INST_IMAGE/$LATEST_TAR
 
-tar --wildcards -zxvf  $LATEST_TAR  "./installer-$ARCH/*/$IMAGES/netboot/ubuntu-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
+tar --wildcards -zxvf  $LATEST_TAR  "./installer-$ARCH/*/$IMAGES/netboot/*-installer/*/initrd.gz" -O > initrd.netinst.$ARCH.gz
 
 gunzip -f initrd.netinst.$ARCH.gz
 lzma -9 initrd.netinst.$ARCH
