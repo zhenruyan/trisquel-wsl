@@ -381,8 +381,8 @@ EOF
 [ -d $CHROOT/etc/NetworkManager/conf.d ] && touch $CHROOT/etc/NetworkManager/conf.d/10-globally-managed-devices.conf
 
 cp files/partman-recipe $CHROOT/lib/partman/recipes/20trisquel
-[ $DIST = "trisquel" ] && sed -i 's/3000 5000 15000/8000 10000 20000/' $CHROOT/lib/partman/recipes/20trisquel
-[ $DIST = "triskel" ] && sed -i 's/3000 5000 15000/8000 10000 20000/' $CHROOT/lib/partman/recipes/20trisquel
+cp files/partman-recipe $CHROOT/lib/partman/recipes-amd64-efi/20trisquel
+[ $DIST = "trisquel-mini" ] && sed -i 's/8000 10000 25000/5000 8000 15000/' $CHROOT/lib/partman/recipes/20trisquel $CHROOT/lib/partman/recipes-amd64-efi/20trisquel
 
 ##############################################################################
 

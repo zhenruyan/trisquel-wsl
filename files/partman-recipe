@@ -5,7 +5,13 @@ partman-auto/text/home_scheme ::
         $reusemethod{ }
         method{ biosgrub } .
 
-512 1024 768 ext4
+538 538 1075 fat32
+        $reusemethod{ }
+        $primary{ }
+        method{ efi }
+        format{ } .
+
+1792 1024 2048 ext4
         $defaultignore{ }
         $lvmignore{ }
         method{ format }
@@ -14,7 +20,7 @@ partman-auto/text/home_scheme ::
         filesystem{ ext4 }
         mountpoint{ /boot } .
 
-3000 5000 15000 $default_filesystem
+8000 10000 25000 $default_filesystem
         $lvmok{ }
         method{ format }
         format{ }
@@ -25,19 +31,18 @@ partman-auto/text/home_scheme ::
         mountpoint{ / } .
 
 96 512 300% linux-swap
-        $defaultignore{ }
         $lvmok{ }
         $reusemethod{ }
         method{ swap }
         format{ } .
 
-1000 10000 -1 $default_filesystem
+4000 10000 -1 $default_filesystem
         $lvmok{ }
         method{ format }
         format{ }
         use_filesystem{ }
         $default_filesystem{ }
-        filesystem{ xfs }
+        filesystem{ ext4 }
         options/relatime{ relatime }
         mountpoint{ /home } .
 
