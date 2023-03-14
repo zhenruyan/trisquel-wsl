@@ -11,7 +11,7 @@ partman-auto/text/home_scheme ::
         method{ efi }
         format{ } .
 
-512 1024 768 ext4
+1792 1024 2048 ext4
         $defaultignore{ }
         $lvmignore{ }
         method{ format }
@@ -20,7 +20,7 @@ partman-auto/text/home_scheme ::
         filesystem{ ext4 }
         mountpoint{ /boot } .
 
-3000 5000 15000 $default_filesystem
+8000 10000 25000 $default_filesystem
         $lvmok{ }
         method{ format }
         format{ }
@@ -30,20 +30,19 @@ partman-auto/text/home_scheme ::
         options/relatime{ relatime }
         mountpoint{ / } .
 
-96 512 200% linux-swap
-        $defaultignore{ }
+96 512 300% linux-swap
         $lvmok{ }
         $reusemethod{ }
         method{ swap }
         format{ } .
 
-1000 10000 -1 $default_filesystem
+4000 10000 -1 $default_filesystem
         $lvmok{ }
         method{ format }
         format{ }
         use_filesystem{ }
         $default_filesystem{ }
-        filesystem{ xfs }
+        filesystem{ ext4 }
         options/relatime{ relatime }
         mountpoint{ /home } .
 

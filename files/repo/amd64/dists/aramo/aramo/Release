@@ -1,0 +1,30 @@
+Origin: Trisquel
+Label: Trisquel
+Suite: aramo
+Codename: aramo
+Version: 11.0
+Date: Sun, 05 Mar 2023 22:04:20 UTC
+Architectures: amd64
+Components: main
+Description: Trisquel GNU/Linux packages
+MD5Sum:
+ 7922eef221ef1578cc968c83995cde34 4727 main/binary-amd64/Packages
+ 9d19f23ef700d6c29b5ab4a799735e83 1792 main/binary-amd64/Packages.gz
+ e782431691a0824e0b26507b3e88a60a 2045 main/binary-amd64/Packages.bz2
+ b38b24bcab80e2f579e7fafc3df20abc 139 main/binary-amd64/Release
+ e8173b4f4247a5a094993323a29d1c4a 19452 main/Contents-amd64
+ 5c650eb3219200c00ae03283caa67dda 1663 main/Contents-amd64.gz
+SHA1:
+ 2eb645a8e77c73fd25c05469e2cb2f439501d632 4727 main/binary-amd64/Packages
+ d35ec2538728fbb2a4446c950ffeee598d9b03fd 1792 main/binary-amd64/Packages.gz
+ 7da1492692398093727ee10c6a1ea43cdbb4560e 2045 main/binary-amd64/Packages.bz2
+ adedfd95c49c35a5025bc7e081382ab4c778a39a 139 main/binary-amd64/Release
+ ea1793f8c6f89532add323e597ac9b39f2b71464 19452 main/Contents-amd64
+ 3a4f83eb5330931c712aa41ef200232782f70774 1663 main/Contents-amd64.gz
+SHA256:
+ 85790bd140062bfd748ab164427598032936cfb22adeef94fb038833c91869c3 4727 main/binary-amd64/Packages
+ 40c43659bad59e2cd6be5ed58d09f487dcd8f2387fdf6a06fcd4ad053d8ae237 1792 main/binary-amd64/Packages.gz
+ 4d97997bdeb86909ff878a6d9e70a75c272d45ec71e64c3bb5bca4afc334ffad 2045 main/binary-amd64/Packages.bz2
+ 8d4d84d532197873f8cd8c58500cbe719329138082f743a10dd6825e253a3974 139 main/binary-amd64/Release
+ 76aa035ce66ec887acb8e085927725a66998ffebd4eccd0157158ce2fdbce391 19452 main/Contents-amd64
+ 55ccbe7a5727eb2981e04dd51c1d69d0d43ecc5d7daff8415c278f3c397b7b28 1663 main/Contents-amd64.gz

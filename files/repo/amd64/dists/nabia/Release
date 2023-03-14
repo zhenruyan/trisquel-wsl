@@ -1,0 +1,24 @@
+Origin: Trisquel
+Label: Trisquel
+Suite: nabia
+Codename: nabia
+Version: 10.0
+Date: Sat, 21 May 2022 15:56:01 UTC
+Architectures: amd64
+Components: main
+Description: Trisquel GNU/Linux packages
+MD5Sum:
+ 049f8fc31efb89772ef88df10d87d844 4710 main/binary-amd64/Packages
+ 1bd8306e07b1e15da64fbf1e2442e591 1779 main/binary-amd64/Packages.gz
+ 841947e5d7bda04cbb3f2929490f25e1 2022 main/binary-amd64/Packages.bz2
+ eeb40279235d52fb5df535d5e576bca5 139 main/binary-amd64/Release
+SHA1:
+ c733a272308869c5329ed9031694f9835819b1e8 4710 main/binary-amd64/Packages
+ c4afc913def3416f58e16b71dcaac33a3f3665a5 1779 main/binary-amd64/Packages.gz
+ 42faeeaf5d4c1ec370c708e0e3412be745b9dc28 2022 main/binary-amd64/Packages.bz2
+ a4b2cd4af3c412cf4085c19382308b118bc409b7 139 main/binary-amd64/Release
+SHA256:
+ 3c4dd195edeb3429ab1f7c0cc71e644b93be9fefb44f6fdb6e30596b29a579bf 4710 main/binary-amd64/Packages
+ e835bafa27399510209c3a8513a0147e8b83d8d60df2402a1c479485cccac13c 1779 main/binary-amd64/Packages.gz
+ f44ce11ebe17bef76f5a0428585e83cb5abd8e9192b9fb236894a4cd6e78d66b 2022 main/binary-amd64/Packages.bz2
+ 680299034dd1694f5f1e3d90609c8042a89b6a551caaf75ea8be70c65eebb212 139 main/binary-amd64/Release

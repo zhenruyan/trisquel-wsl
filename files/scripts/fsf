@@ -1,5 +1,5 @@
 cp files/artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
-cp files/artwork/$CODENAME/grub-fsf.png $CHROOT/usr/share/backgrounds/trisquel-grub-custom.png
+cp files/artwork/$CODENAME/grub-fsf.png $CHROOT/boot/background.png
 cp files/artwork/fsf-logo.png $CHROOT/usr/share/plymouth/themes/trisquel-logo/custom.png
 cat << EOF > $CHROOT/etc/xdg/autostart/fsf-membercard.desktop
 [Desktop Entry]

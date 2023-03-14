@@ -1,0 +1,7 @@
+Archive: nabia
+Version: 10.0
+Component: main
+Origin: Trisquel
+Label: Trisquel
+Architecture: amd64
+Description: Trisquel GNU/Linux packages

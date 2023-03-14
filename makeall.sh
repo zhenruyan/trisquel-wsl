@@ -17,26 +17,28 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-set -e 
+set -ex
 
 if [ $UID != 0 ]; then
     echo You need to run this script as root!
     exit 1
 fi
 
-CODENAME=nabia
-VERSION=10.0
+CODENAME=aramo
+VERSION=11.0
 MKTORRENT=$PWD/files/mktorrent-1.0/mktorrent
 TRACKER=http://tracker.trisquel.org:6969/announce
 
 rm NOT-FOUND source iso/* -rf
-bash makeiso.sh all amd64 triskel $CODENAME
 bash makeiso.sh all amd64 trisquel $CODENAME i18n
+bash makeiso.sh all amd64 trisquel-mini $CODENAME
+bash makeiso.sh all amd64 triskel $CODENAME
 bash makeiso.sh all amd64 trisquel $CODENAME i18n fsf
 bash makeiso.sh all amd64 trisquel-sugar $CODENAME
-bash makeiso.sh all amd64 trisquel-mini $CODENAME
 bash makeiso.sh source amd64 trisquel $CODENAME
 bash makearmimage.sh $CODENAME armhf
+bash makearmimage.sh $CODENAME arm64
+bash makearmimage.sh $CODENAME ppc64el
 
 cd iso
 mv trisquel-netinst_* trisquel-netinst_${VERSION}_amd64.iso
@@ -50,7 +52,6 @@ https://mirrors.ocf.berkeley.edu/trisquel-images/
 https://ftp.acc.umu.se/mirror/trisquel/iso/
 https://mirror.linux.pizza/trisquel/images/
 https://ftpmirror1.infania.net/mirror/trisquel/iso/
-https://mirror.operationtulip.com/trisquel/images/
 https://mirror.librelabucm.org/trisquel-images/
 https://ftp.caliu.cat/pub/distribucions/trisquel/iso/
 https://quantum-mirror.hu/mirrors/pub/trisquel/iso/
@@ -69,6 +70,8 @@ maketorrent(){
     $MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME $DESC" -w $SEEDS $FILE
 }
 
-maketorrent trisquel-netinst_${VERSION}_amd64.iso "Network Installer"
+maketorrent trisquel-netinst_${VERSION}_amd64.iso "amd64 Network Installer"
 maketorrent trisquel-base_${VERSION}_armhf.tar.bz2 "ARM32/armhf/ARMv7 base image"
+maketorrent trisquel-base_${VERSION}_arm64.tar.bz2 "arm64/ARMv7 base image"
+maketorrent trisquel-base_${VERSION}_ppc64el.tar.bz2 "ppc64el base image"
 

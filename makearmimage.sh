@@ -22,11 +22,11 @@ set -e
 RELEASE=$1
 ARCH=$2
 
-if [ $RELEASE != nabia ]; then
+if [ $RELEASE != aramo ]; then
   echo Fix VERSION variable
   exit 0
 fi
-VERSION=10.0
+VERSION=11.0
 OUTPUT=trisquel-base_${VERSION}_${ARCH}
 
 CHROOT=$(mktemp -d)
@@ -44,7 +44,7 @@ mount -o bind /sys $CHROOT/sys
 
 echo "127.0.0.1 localhost" > $CHROOT/etc/hosts
 
-cat << EOF > /etc/apt/sources.list
+cat << EOF > $CHROOT/etc/apt/sources.list
 # See http://trisquel.info/wiki/ for how to upgrade to
 # newer versions of the distribution.
 deb http://archive.trisquel.org/trisquel/ $RELEASE main

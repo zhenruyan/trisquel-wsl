@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#    Copyright (C) 2004-2022 Ruben Rodriguez <ruben@trisquel.info>
+#    Copyright (C) 2004-2023 Ruben Rodriguez <ruben@trisquel.info>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-set -e
+set -ex
 
 if [ $UID != 0 ]; then
     echo You need to run this script as root!
@@ -35,7 +35,6 @@ https://mirrors.ocf.berkeley.edu/trisquel-images/
 https://ftp.acc.umu.se/mirror/trisquel/iso/
 https://mirror.linux.pizza/trisquel/images/
 https://ftpmirror1.infania.net/mirror/trisquel/iso/
-https://mirror.operationtulip.com/trisquel/images/
 https://mirror.librelabucm.org/trisquel-images/
 https://ftp.caliu.cat/pub/distribucions/trisquel/iso/
 https://quantum-mirror.hu/mirrors/pub/trisquel/iso/
@@ -102,8 +101,9 @@ trisquel|trisquel-mini|trisquel-sugar|triskel)	export DIST=$3
 esac
 
 export CODENAME=$4
-[ $CODENAME = nabia ] && UPSTREAM=focal && MVER=10.0 && VERSION=10.0.1
-[ $CODENAME = etiona ] && UPSTREAM=bionic && MVER=9.0 && VERSION=9.0.2
+[ $CODENAME = aramo ] && UPSTREAM=jammy && VERSION=11.0 && BASEVERSION=11.0
+[ $CODENAME = nabia ] && UPSTREAM=focal && VERSION=10.0.1 && BASEVERSION=10.0
+[ $CODENAME = etiona ] && UPSTREAM=bionic && VERSION=9.0.2 && BASEVERSION=9.0
 [ $CODENAME = flidas ] && UPSTREAM=xenial && VERSION=8.0
 
 echo $* | grep -q i18n && i18n=true || i18n=false
@@ -121,6 +121,7 @@ export DEBIAN_FRONTEND=noninteractive
 export CHROOT=$PWD/$DIST-$ARCH
 export C="chroot $CHROOT"
 export LOG=logs/$DIST-$ARCH.log
+[ $ACTION = "source" ] && export LOG=logs/$DIST-source.log
 export LANG=C
 export LC_ALL=C
 export LANGUAGE=C
@@ -141,8 +142,10 @@ deb-src $MIRROR $CODENAME-security main
 EOF
 
 apt-get update
-#rm -rf source
-#mkdir source
+umount source || true
+rm -rf source || true
+mkdir source
+mount none -t tmpfs source
 cd source
 
 MANIFESTS=../iso/*manifest
@@ -151,14 +154,14 @@ $fsf && VERSION=${VERSION}fsf
 
 for i in $(cut -d" " -f1 $MANIFESTS |sort -u); do
 i=$(echo $i| sed 's/:.*//')
-source=$(apt-cache showsrc $i | head -n 1 | grep '^Package: ' | awk '{print $2}')
+source=$(apt-cache show $i | grep '^Source: ' | awk '{print $2}')
     echo "Package: $i (source: $source)"
     [ -f ${source}_*dsc ] && continue || true
-    apt-get source -d $source || echo $i:$source >> ../NOT-FOUND
+    apt-get source --only-source -d $source || echo $i:$source >> ../NOT-FOUND
 done
 
 # Some shy packages may need to be asked directly
-apt-get source -d linux-libc-dev linux-meta memtest86+ syslinux \
+apt-get source --only-source -d linux linux-meta memtest86+ syslinux \
                   python-extras efibootmgr shim grub2 plymouth
 
 for file in $(find . -type f|sed 's_./__'); do
@@ -168,20 +171,23 @@ for file in $(find . -type f|sed 's_./__'); do
 done
 
 cd ..
-xorriso -as mkisofs -f -J  -joliet-long -r  -V "trisquel-$VERSION src" -o iso/trisquel_${VERSION}_sources.iso source
+tar -cvf iso/trisquel_${VERSION}_sources.tar source
+(cd source; find) > iso/trisquel_${VERSION}_sources.tar.manifest
 
 SEEDS=$(for i in $MIRRORS
 do
-echo -n ${i}trisquel_${VERSION}_sources.iso','
+echo -n ${i}trisquel_${VERSION}_sources.tar','
 done | sed 's/,$//')
 
 cd iso
-rm -f trisquel_${VERSION}_sources.iso.torrent
-$MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME Source DVD" -w $SEEDS trisquel_${VERSION}_sources.iso
-md5sum trisquel_${VERSION}_sources.iso > trisquel_${VERSION}_sources.iso.md5
-sha1sum trisquel_${VERSION}_sources.iso > trisquel_${VERSION}_sources.iso.sha1
-sha256sum trisquel_${VERSION}_sources.iso > trisquel_${VERSION}_sources.iso.sha256
+rm -f trisquel_${VERSION}_sources.tar.torrent
+$MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME Sources" -w $SEEDS trisquel_${VERSION}_sources.tar
+md5sum trisquel_${VERSION}_sources.tar > trisquel_${VERSION}_sources.tar.md5
+sha1sum trisquel_${VERSION}_sources.tar > trisquel_${VERSION}_sources.tar.sha1
+sha256sum trisquel_${VERSION}_sources.tar > trisquel_${VERSION}_sources.tar.sha256
 
+umount source
+rm -r source
 }
 
 DELETE_CHROOT() {
@@ -235,10 +241,9 @@ debootstrap --arch=$ARCH $CODENAME $CHROOT $MIRROR
 echo exit 101 > $CHROOT/usr/sbin/policy-rc.d
 chmod +x $CHROOT/usr/sbin/policy-rc.d
 
-# Development build key
-#wget https://builds.trisquel.org/repos/signkey.asc -O $CHROOT/tmp/key.asc
-#$C apt-key add /tmp/key.asc
-#rm $CHROOT/tmp/key.asc
+# Development build key DO NOT USE FOR RELEASE IMAGES!!
+#wget https://builds.trisquel.org/repos/signkey.asc -O /tmp/trisquel-devel-signkey.asc
+#gpg --no-default-keyring --keyring gnupg-ring:$CHROOT/etc/apt/trusted.gpg.d/trisquel-devel-signkey.gpg --import /tmp/trisquel-devel-signkey.asc
 
 #use proxy only if proxy variable is set
 [ -n "$PROXY_FULL_ADDRESS" ] && \
@@ -251,6 +256,9 @@ deb $MIRROR $CODENAME-security main
 #deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME main
 #deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME-security main
 #deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME-updates main
+#deb http://builds.trisquel.org/repos-testing/$CODENAME/ $CODENAME main
+#deb http://builds.trisquel.org/repos-testing/$CODENAME/ $CODENAME-security main
+#deb http://builds.trisquel.org/repos-testing/$CODENAME/ $CODENAME-updates main
 #deb http://builds.trisquel.org/repos/$CODENAME/ $CODENAME-backports main
 EOF
 
@@ -275,32 +283,39 @@ rm $DISTRO_REPO
 
 KERNEL=linux-generic
 
+DM=lightdm-gtk-greeter
+[ $DIST = triskel ] && DM=sddm
+[ $DIST = trisquel-gnome ] && DM=gdm3
+
 # package install
 echo "KERNEL=$KERNEL" > $CHROOT/tmp/install
 echo "DIST=$DIST" >> $CHROOT/tmp/install
 echo "VERSION=$VERSION" >> $CHROOT/tmp/install
-echo 'LANG=C
+echo "BASEVERSION=$BASEVERSION" >> $CHROOT/tmp/install
+echo "DM=$DM" >> $CHROOT/tmp/install
+echo 'set -e
+LANG=C
 apt-get update
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $KERNEL trisquel-minimal trisquel-base
 apt-get clean
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $DIST
 aptitude unmarkauto $(apt-cache depends $DIST | grep Depends | sed s/.*:.//)
 apt-get clean
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends ${DIST}-recommended spice-vdagent
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends ${DIST}-recommended
 aptitude unmarkauto $(apt-cache depends $DIST-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
 apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends trisquel-base-recommended
 aptitude unmarkauto $(apt-cache depends trisquel-base-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
 [ $DIST != trisquel-sugar ] && \
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends trisquel-desktop-common-recommended
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends trisquel-desktop-common-recommended spice-vdagent
 aptitude unmarkauto $(apt-cache depends trisquel-desktop-common-recommended | grep Depends | sed s/.*:.//)
 apt-get clean
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $(apt-cache show $DIST | grep ^Suggests|sed s/Suggests://|sed s/\,//g|head -n1)
-[ $MVER = 9.0 ] && \
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all vdpau-va-driver  casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
-[ $MVER = 10.0 ] && \
-apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us lupin-casper abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $DM $(apt-cache show $DIST | grep ^Suggests|sed s/Suggests://|sed s/\,//g|head -n1)
+[ $BASEVERSION = 9.0 ] && \
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all vdpau-va-driver  casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
+[ $BASEVERSION = 10.0 ] && \
+apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends  xorg xserver-xorg xserver-xorg-input-all xserver-xorg-video-all mesa-vdpau-drivers va-driver-all vdpau-driver-all casper grub-pc gparted language-pack-en language-pack-es language-pack-gnome-en language-pack-gnome-es hyphen-en-us mythes-en-us abrowser-locale-es aspell aspell-en aspell-es dictionaries-common language-pack-en-base language-pack-gnome-en-base wamerican wbritish wspanish plymouth-theme-trisquel-text plymouth-theme-trisquel-logo gnome-brave-icon-theme
 
 
 apt-get clean
@@ -308,8 +323,8 @@ apt-get clean
 
 TOINSTALL=""
 
-LANGSUPPORT="en es pt fr sv de it uk zh-hans ru pl nl ja zh-hant gl ca da hu cs nb fi et el sr sl sk ro bg eu ko nn lt vi pa lv ar he th ga id hi ta eo ast tr oc nds sq km hr tl"
-EXTRAPACKAGES="language-pack language-pack-gnome libreoffice-help libreoffice-l10n abrowser-locale gimp-help hunspell icedove-locale"
+LANGSUPPORT="en en-au en-ca en-gb en-za es pt fr sv de it uk zh-hans ru pl nl ja zh-hant gl ca da hu cs nb fi et el sr sl sk ro bg eu ko nn lt vi pa lv ar he th ga id hi ta eo ast tr oc nds sq km hr tl"
+EXTRAPACKAGES="language-pack language-pack-gnome libreoffice-help libreoffice-l10n abrowser-locale gimp-help hunspell icedove-locale hyphen mythes"
 [ $fsf = "true" ] && EXTRAPACKAGES="abrowser-locale hunspell language-pack language-pack-gnome libreoffice-l10n icedove-locale"
 [ $DIST = "trisquel-sugar" ] && EXTRAPACKAGES="language-pack"
 
@@ -333,6 +348,7 @@ then
     echo "apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends $TOINSTALL" >> $CHROOT/tmp/install
     echo "apt-get clean" >> $CHROOT/tmp/install
     echo $LANGSUPPORT | sed 's/ /\n/g; s/zh-hans/zh_CN/g; s/zh-hant/zh_TW/g; s/pt/pt_PT/g;' |sort -u > master/isolinux/langlist
+    sed -i '/en-/d' master/isolinux/langlist
 else
     echo -e "en\nes" > master/isolinux/langlist
 fi
@@ -346,7 +362,7 @@ echo "apt-get clean" >> $CHROOT/tmp/install
 echo "touch /tmp/finished" >> $CHROOT/tmp/install
 
 #Note that using -e will make any package configuration failing exit without any notice.
-$C bash -x -e /tmp/install
+$C bash -x /tmp/install
 rm $CHROOT/tmp/finished
 
 #use proxy only if proxy variable is set
@@ -374,8 +390,8 @@ EOF
 [ -d $CHROOT/etc/NetworkManager/conf.d ] && touch $CHROOT/etc/NetworkManager/conf.d/10-globally-managed-devices.conf
 
 cp files/partman-recipe $CHROOT/lib/partman/recipes/20trisquel
-[ $DIST = "trisquel" ] && sed -i 's/3000 5000 15000/8000 10000 20000/' $CHROOT/lib/partman/recipes/20trisquel
-[ $DIST = "triskel" ] && sed -i 's/3000 5000 15000/8000 10000 20000/' $CHROOT/lib/partman/recipes/20trisquel
+cp files/partman-recipe $CHROOT/lib/partman/recipes-amd64-efi/20trisquel
+[ $DIST = "trisquel-mini" ] && sed -i 's/8000 10000 25000/5000 8000 15000/' $CHROOT/lib/partman/recipes/20trisquel $CHROOT/lib/partman/recipes-amd64-efi/20trisquel
 
 ##############################################################################
 
@@ -389,19 +405,7 @@ EOF
 
 mkdir -p $CHROOT/etc/skel/.local/share
 
-$fsf && cp files/fsf master/fsf -a
-cp files/artwork/$CODENAME/back.jpg master/isolinux/back.jpg
-$fsf && cp files/artwork/$CODENAME/back-fsf.jpg master/isolinux/back.jpg
-[ $DIST = trisquel-sugar ] && cp files/artwork/sugar/back-sugar.jpg master/isolinux/back.jpg
-
-# Update master/isolinux/bootlogo
-BLTMP=$(mktemp -d)
-cp master/isolinux/bootlogo $BLTMP
-(cd $BLTMP; cpio -id < bootlogo)
-cp master/isolinux/* $BLTMP
-rm $BLTMP/bootlogo
-(cd $BLTMP; ls | cpio -o > /tmp/bootlogo)
-mv /tmp/bootlogo master/isolinux/bootlogo
+[ -e $CHROOT/boot/background.png ] || cp files/artwork/$CODENAME/grub.png $CHROOT/boot/background.png
 
 ##############################################################################
 
@@ -431,9 +435,12 @@ $C locale-gen en_US.UTF-8
 [ $DIST = trisquel-sugar ]  && $C update-locale LANG=en_US.UTF-8
 
 rm -rf $CHROOT/var/cache/apt-xapian-index/*
+
+rm $CHROOT/etc/apt/trusted.gpg.d/trisquel-devel-signkey.gpg -f
+
 ##############################################################################
 #Launch prepare netinstall iso and components for larger isos.
-bash files/netinst-prepare.sh $MVER
+bash files/netinst-prepare.sh $BASEVERSION
 
 [ $DIST = 'trisquel-sugar' ] && echo "background=/usr/share/plymouth/themes/sugar/sugar.png"  >> $CHROOT/etc/lightdm/lightdm-gtk-greeter.conf
 [ $DIST = 'trisquel-sugar' ] && echo -e "[Seat:*]\nuser-session=sugar"  >> $CHROOT/etc/lightdm/lightdm.conf.d/sugar.conf
@@ -471,7 +478,7 @@ echo "" > $CHROOT/etc/hosts
 INITRD=$( basename $DIST-$ARCH/boot/initrd.img-* )
 NEW_UUID=$(uuidgen -r)
 
-if [ $MVER = 10.0 ]; then
+if [ $BASEVERSION = 11.0 ]; then
 #mkdir -p $CHROOT/tmp/uninitrd
 #unmkinitramfs $CHROOT/boot/${INITRD} $CHROOT/tmp/uninitrd
 #echo $NEW_UUID | tee $CHROOT/tmp/uninitrd/conf/uuid.conf
@@ -485,7 +492,7 @@ mv $CHROOT/boot/${INITRD} master/casper/initrd
 fi
 
 
-if [ $MVER = 9.0 ]; then
+if [ $BASEVERSION = 9.0 ]; then
 cp  $CHROOT/boot/$INITRD $CHROOT/tmp/initrd.gz && \
 $C /sbin/casper-new-uuid /tmp/initrd.gz /boot/initrd.gz /boot/casper-uuid-generic && \
 rm $CHROOT/tmp/initrd.gz && \
@@ -526,6 +533,26 @@ $MKTORRENT -a $TRACKER -c "Trisquel GNU/Linux $VERSION $CODENAME$EXTRACOMMENT. $
 }
 
 DO_ISO(){
+
+# Setup artwork
+
+BACK=files/artwork/$CODENAME/back.png
+$fsf && BACK=files/artwork/$CODENAME/back-fsf.png
+[ $DIST = trisquel-sugar ] && BACK=files/artwork/sugar/back-sugar.png
+convert -sampling-factor 4:2:0 -strip -quality 85 -interlace none -colorspace RGB $BACK master/isolinux/back.jpg
+
+# Copy FSF membercard files
+$fsf && cp files/fsf master/fsf -a
+
+# Update master/isolinux/bootlogo
+BLTMP=$(mktemp -d)
+cp master/isolinux/bootlogo $BLTMP
+(cd $BLTMP; cpio -id < bootlogo)
+cp master/isolinux/* $BLTMP
+rm $BLTMP/bootlogo
+(cd $BLTMP; ls | cpio -o > /tmp/bootlogo)
+mv /tmp/bootlogo master/isolinux/bootlogo
+
 # builds the CD iso image using the squashfs compressed filesystem
 
 cd master
